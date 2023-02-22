@@ -12,8 +12,8 @@ t  = linspace(t0,tN,nSteps);
 config = CameraConfig();
 config = setAppConfig(config); 
 config.set('t',t);
-config.set('groundTruthFileName','RSS18ExpB_groundTruth.graph');
-config.set('measurementsFileName','RSS18ExpB_measurements.graph');
+config.set('groundTruthFileName','VDO_toy_groundTruth.graph');
+config.set('measurementsFileName','VDO_toy_measurements.graph');
 
 % SE3 Motion
 config.set('pointMotionMeasurement','point2DataAssociation');
@@ -25,20 +25,20 @@ if config.rngSeed
     rng(config.rngSeed); 
 end
 
-robotWaypoints = [( -15 - .5 * (.5 + 10 * sin(t / 10))); sin(t * .5); 2 + cos(t * .5)]';
+robotWaypoints = [( -15 - 0.5 * (0.5 + 10 * sin(t / 10))); sin(t * 0.5); 2 + cos(t * 0.5)]';
 robotWaypoints = reshape(robotWaypoints',[size(robotWaypoints,2),size(robotWaypoints,1)]);
 robotTrajectoryWaypoints = [linspace(0,tN,nSteps);robotWaypoints];
 
-primitive1InitialPose_R3xso3 = [-15 5 5 pi/2 0 0]';
-primitive1Motion_R3xso3 = [1*dt; 0; 0;arot(eul2rot([0.105*dt,0,0]))];
+primitive1InitialPose_R3xso3 = [-15, 5, 5, pi/2, 0, 0]';
+primitive1Motion_R3xso3 = [1*dt; 0; 0; arot(eul2rot([0.105*dt,0,0]))];
 
-primitive2InitialPose_R3xso3 = [3 -10 2 0 pi/2 0]';
+primitive2InitialPose_R3xso3 = [3, -10, 2, 0, pi/2, 0]';
 primitive2Motion_R3xso3 = [1.5*dt; 0; 0; arot(eul2rot([-0.105*dt,0,0]))];
 
-primitive3InitialPose_R3xso3 = [-15 -5 5 pi/2 0 0]';
+primitive3InitialPose_R3xso3 = [-15, -5, 5, pi/2, 0, 0]';
 primitive3Motion_R3xso3 = [1.5*dt; 0; 0; arot(eul2rot([-0.105*dt,0,0]))];
 
-primitive4InitialPose_R3xso3 = [-30 -10 2 0 pi/2 0]';
+primitive4InitialPose_R3xso3 = [-30, -10, 2, 0, pi/2, 0]';
 primitive4Motion_R3xso3 = [1.5*dt; 0; 0; arot(eul2rot([-0.105*dt,0,0]))];
 
 % construct trajectories
