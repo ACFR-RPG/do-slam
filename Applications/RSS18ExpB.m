@@ -78,27 +78,27 @@ figure
 spy(sensor.get('pointVisibility'));
 print('RSS18ExpB_PointVisibility','-dpdf')
 %% 4. Plot Environment
-% figure
-% viewPoint = [-35,35];
-% % axisLimits = [-30,30,-5,30,-10,10];
-% % title('Environment')
-% axis equal
-% xlabel('x (m)')
-% ylabel('y (m)')
-% zlabel('z (m)')
-% view(viewPoint)
-% % axis(axisLimits)
-% hold on
-% grid on
-% primitive1Trajectory.plot(t,[0 0 0],'axesOFF')
-% primitive2Trajectory.plot(t,[0 0 0],'axesOFF')
-% primitive3Trajectory.plot(t,[0 0 0],'axesOFF')
-% primitive4Trajectory.plot(t,[0 0 0],'axesOFF')
-% cameraTrajectory.plot(t,[0 0 1],'axesOFF')
-% % set(gcf,'Position',[0 0 1024 768]);
-% frames = sensor.plot(t,environment);
-% print('RSS18ExpB_Environment','-dpdf')
-% implay(frames);
+figure
+viewPoint = [-35,35];
+% axisLimits = [-30,30,-5,30,-10,10];
+% title('Environment')
+axis equal
+xlabel('x (m)')
+ylabel('y (m)')
+zlabel('z (m)')
+view(viewPoint)
+% axis(axisLimits)
+hold on
+grid on
+primitive1Trajectory.plot(t,[0 0 0],'axesOFF')
+primitive2Trajectory.plot(t,[0 0 0],'axesOFF')
+primitive3Trajectory.plot(t,[0 0 0],'axesOFF')
+primitive4Trajectory.plot(t,[0 0 0],'axesOFF')
+cameraTrajectory.plot(t,[0 0 1],'axesOFF')
+% set(gcf,'Position',[0 0 1024 768]);
+frames = sensor.plot(t,environment);
+print('RSS18ExpB_Environment','-dpdf')
+implay(frames);
 
     %% 4.a output video
 % v = VideoWriter('Data/Videos/RSS18ExpB_sensor_environment.mp4','MPEG-4');
@@ -121,7 +121,7 @@ config.set('constantSE3Motion',constantSE3ObjectMotion);
     config.set('measurementsFileName','RSS18ExpB_measurements.graph');
     config.set('groundTruthFileName','RSS18ExpB_groundTruth.graph');
     sensor.generateMeasurements(config);
-    writeDataAssociationVerticesEdges_constantSE3Motion2(config,constantSE3ObjectMotion);
+    writeDataAssociationVerticesEdges_constantSE3Motion(config,constantSE3ObjectMotion);
     measurementsCell = graphFileToCell(config,config.measurementsFileName);
     groundTruthCell  = graphFileToCell(config,config.groundTruthFileName);
 

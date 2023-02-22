@@ -89,7 +89,7 @@ print('RSS18ExpB2_SP2_Environment','-dpdf')
 % implay(frames);
 
     %% 4.a output video
-v = VideoWriter('Data/Videos/RSS18ExpB2_SP2_sensor_environment.mp4','MPEG-4');
+v = VideoWriter('Data/Videos/RSS18ExpB2_SP2_sensor_environment.avi','Uncompressed AVI');
 open(v)
 writeVideo(v,frames);
 close(v)
