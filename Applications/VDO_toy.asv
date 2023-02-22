@@ -71,9 +71,9 @@ sensor.setVisibility(config,environment);
 
 figure
 spy(sensor.get('pointVisibility'));
-pointRelative = sensor.get('pointObservationRelative');
 visibility = sensor.get('pointVisibility');
-visibleRelative = pointRelative(visibility(:, 2)~=0, 2);
+points = sensor.get('points');
+objs = sensor.get('points');
 
 print('VDO_toy_PointVisibility','-dpdf')
 %% 4. Plot Environment
