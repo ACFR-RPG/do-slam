@@ -47,6 +47,8 @@ cameraTrajectory = RelativePoseTrajectory(robotTrajectory,config.cameraRelativeP
 
 environment = Environment();
 
+% Static Points
+
 staticX = repmat(linspace(1, staticRes*(staticDim-1)+1, staticDim), 1, staticDim) - 25;
 staticY = 10*ones(1, staticDim^2);
 
@@ -80,6 +82,15 @@ staticR = [staticRX; staticRY; staticLRZ];
 statisPoints = [staticB, staticT, staticL, staticR];
 environment.addStaticPoints(statisPoints);
 
+% Dynamic Points
+primitive1InitialPose_R3xso3 = [-15, 5, 5, pi/2, 0, 0]';
+primitive1Motion_R3xso3 = [1*dt; 0; 0; arot(eul2rot([0.105*dt,0,0]))];
+primitive1Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive1InitialPose_R3xso3,primitive1Motion_R3xso3,'R3xso3');
+environment.addEllipsoid([1 1 2.5],8,'R3',primitive1Trajectory);
+
+
+constantSE3ObjectMotion = [];
+constantSE3ObjectMotion(:,1) = primitive1Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
 
 
 % occlusion sensor
@@ -103,6 +114,8 @@ zlabel('z (m)')
 
 hold on
 grid on
+primitive1Trajectory.plot(t,[0 0 0],'axesOFF')
+
 cameraTrajectory.plot(t,[0 0 1],'axesOFF')
 frames = sensor.plot(t,environment);
 
