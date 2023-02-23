@@ -66,6 +66,14 @@ environment.addEllipsoid([1 1 2.5],8,'R3',primitive2Trajectory);
 environment.addEllipsoid([1 1 2.5],8,'R3',primitive3Trajectory);
 environment.addEllipsoid([1 1 2.5],8,'R3',primitive4Trajectory);
 environment.addEllipsoid([1 1 2.5],8,'R3',primitive5Trajectory);
+
+staticDim = 7;
+staticRes = 5;
+staticX = repmat(linspace(1, staticRes*(staticDim-1)+1, staticDim), 1, staticDim) - 25;
+staticZ = reshape(repmat(linspace(1, staticRes*(staticDim-1)+1, 7), staticDim, 1), 1, []) - 15;
+staticY = 10*ones(1, staticDim^2);
+statisPoints = [staticX; staticY; staticZ];
+environment.addStaticPoints(statisPoints);
 %% 3. Initialise Sensor
 cameraTrajectory = RelativePoseTrajectory(robotTrajectory,config.cameraRelativePose);
 
@@ -82,6 +90,7 @@ visibility = sensor.get('pointVisibility');
 visibleRelative = pointRelative(visibility(:, 2)~=0, 2);
 
 % print('VDO_toy_PointVisibility','-dpdf')
+pause(0.1);
 %% 4. Plot Environment
 figure
 viewPoint = [-35,35];
