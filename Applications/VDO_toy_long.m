@@ -21,7 +21,7 @@ config.set('motionModel','constantSE3MotionDA');
 config.set('std2PointsSE3Motion', [0.05,0.05,0.05]');
 
 % config.set('fieldofView', [-pi/2,pi/2,-pi/3,pi/3,1,40]); % Requires update
-config.set('cameraRelativePose', GP_Pose([0,0,0,0,0,0]'));
+config.set('cameraRelativePose', GP_Pose([0,0,0,0,0,pi/2]'));
 
 %% Environment Parameter
 
@@ -30,10 +30,13 @@ Scale = 20; % Roughly the half size of the Bounding Box of the environment, a ra
 
 %% Generate Environment
 
-robotWaypoints = [cos(linspace(0, 1, nSteps)*pi); sin(linspace(0, 1, nSteps)*pi); linspace(-1/4, 1/4, nSteps)]*Scale + repmat(Centre, 1, nSteps);
-robotTrajectoryWaypoints = [linspace(0,tN,nSteps);robotWaypoints];
+% robotInitialPose_R3xso3 = [-Scale/2 + Centre(1); -Scale/2 + Centre(2); -Scale/4 + Centre(3); 0; 0; pi/2];
+% robotMotion_R3xso3 = [pi*Scale/nSteps; 0; Scale/(2*nSteps); arot(eul2rot([pi/nSteps,0,0]))];
+robotInitialPose_R3xso3 = [10; 20; 30; 0; 0; pi/2];
+robotMotion_R3xso3 = [1/nSteps; 0; 0; 0; 0; 0];
 
-robotTrajectory = PositionModelPoseTrajectory(robotTrajectoryWaypoints,'R3','smoothingspline');
+
+robotTrajectory = ConstantMotionDiscretePoseTrajectory(t,robotInitialPose_R3xso3,robotMotion_R3xso3,'R3xso3');
 cameraTrajectory = RelativePoseTrajectory(robotTrajectory,config.cameraRelativePose);
 
 environment = Environment();
