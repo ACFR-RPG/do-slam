@@ -21,10 +21,10 @@ for i=1:nSteps
     visiblePointPositions = self.get('points',visiblePointIndexes).get('R3Position',t(i));
     invisiblePointPositions = self.get('points',invisiblePointIndexes).get('R3Position',t(i));
     if ~isempty(visiblePointIndexes)
-        figHandles(1) = plot3(visiblePointPositions(1,:),visiblePointPositions(2,:),visiblePointPositions(3,:),'r.');
+        figHandles(1) = plot3(visiblePointPositions(1,:),visiblePointPositions(2,:),visiblePointPositions(3,:),'r.','MarkerSize',15);
     end
     if ~isempty(invisiblePointIndexes)
-        figHandles(2) = plot3(invisiblePointPositions(1,:),invisiblePointPositions(2,:),invisiblePointPositions(3,:),'k.');
+        figHandles(2) = plot3(invisiblePointPositions(1,:),invisiblePointPositions(2,:),invisiblePointPositions(3,:),'k.','MarkerSize',10);
     end
     cameraGP_Pose = self.get('trajectory').get('GP_Pose',t(i));
     cameraPose = poseConversion.RelativeToAbsolutePose(cameraGP_Pose).get('R3xso3Pose');

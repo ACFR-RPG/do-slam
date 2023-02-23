@@ -41,18 +41,23 @@ primitive3Motion_R3xso3 = [1.5*dt; 0; 0; arot(eul2rot([-0.105*dt,0,0]))];
 primitive4InitialPose_R3xso3 = [-30, -10, 2, 0, pi/2, 0]';
 primitive4Motion_R3xso3 = [1.5*dt; 0; 0; arot(eul2rot([-0.105*dt,0,0]))];
 
+primitive5InitialPose_R3xso3 = [-5, -5, 15, 0, pi, 0]';
+primitive5Motion_R3xso3 = [1.5*dt; 0; 0; arot(eul2rot([-0.105*dt,0,0]))];
+
 % construct trajectories
 robotTrajectory = PositionModelPoseTrajectory(robotTrajectoryWaypoints,'R3','smoothingspline');
 primitive1Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive1InitialPose_R3xso3,primitive1Motion_R3xso3,'R3xso3');
 primitive2Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive2InitialPose_R3xso3,primitive2Motion_R3xso3,'R3xso3');
 primitive3Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive3InitialPose_R3xso3,primitive3Motion_R3xso3,'R3xso3');
 primitive4Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive4InitialPose_R3xso3,primitive4Motion_R3xso3,'R3xso3');
+primitive5Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive5InitialPose_R3xso3,primitive5Motion_R3xso3,'R3xso3');
 
 constantSE3ObjectMotion = [];
 constantSE3ObjectMotion(:,1) = primitive1Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
 constantSE3ObjectMotion(:,2) = primitive2Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
 constantSE3ObjectMotion(:,3) = primitive3Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
 constantSE3ObjectMotion(:,4) = primitive4Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
+constantSE3ObjectMotion(:,5) = primitive4Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
 
 
 environment = Environment();
@@ -60,6 +65,7 @@ environment.addEllipsoid([1 1 2.5],8,'R3',primitive1Trajectory);
 environment.addEllipsoid([1 1 2.5],8,'R3',primitive2Trajectory);
 environment.addEllipsoid([1 1 2.5],8,'R3',primitive3Trajectory);
 environment.addEllipsoid([1 1 2.5],8,'R3',primitive4Trajectory);
+environment.addEllipsoid([1 1 2.5],8,'R3',primitive5Trajectory);
 %% 3. Initialise Sensor
 cameraTrajectory = RelativePoseTrajectory(robotTrajectory,config.cameraRelativePose);
 
@@ -75,7 +81,7 @@ pointRelative = sensor.get('pointObservationRelative');
 visibility = sensor.get('pointVisibility');
 visibleRelative = pointRelative(visibility(:, 2)~=0, 2);
 
-print('VDO_toy_PointVisibility','-dpdf')
+% print('VDO_toy_PointVisibility','-dpdf')
 %% 4. Plot Environment
 figure
 viewPoint = [-35,35];
@@ -93,10 +99,11 @@ primitive1Trajectory.plot(t,[0 0 0],'axesOFF')
 primitive2Trajectory.plot(t,[0 0 0],'axesOFF')
 primitive3Trajectory.plot(t,[0 0 0],'axesOFF')
 primitive4Trajectory.plot(t,[0 0 0],'axesOFF')
+primitive5Trajectory.plot(t,[0 0 0],'axesOFF')
 cameraTrajectory.plot(t,[0 0 1],'axesOFF')
 % set(gcf,'Position',[0 0 1024 768]);
 frames = sensor.plot(t,environment);
-print('RSS18ExpB_Environment','-dpdf')
+% print('VDO_Toy_Environment','-dpdf')
 implay(frames);
 
     %% 4.a output video
@@ -108,9 +115,9 @@ implay(frames);
 %% 5. Generate Measurements & Save to Graph File, load graph file as well
 config.set('constantSE3Motion',constantSE3ObjectMotion);
      %% 5.1 For initial (without SE3)
-    config.set('pointMotionMeasurement','Off')
-    config.set('measurementsFileName','VDO_toy_measurementsNoSE3.graph')
-    config.set('groundTruthFileName','VDO_toy_groundTruthNoSE3.graph')
+    config.set('pointMotionMeasurement','Off');
+    config.set('measurementsFileName','VDO_toy_measurementsNoSE3.graph');
+    config.set('groundTruthFileName','VDO_toy_groundTruthNoSE3.graph');
     sensor.generateMeasurements(config);
     groundTruthNoSE3Cell = graphFileToCell(config,config.groundTruthFileName);
     measurementsNoSE3Cell = graphFileToCell(config,config.measurementsFileName);
