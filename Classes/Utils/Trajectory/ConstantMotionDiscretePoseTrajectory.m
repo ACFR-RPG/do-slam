@@ -49,7 +49,7 @@ classdef ConstantMotionDiscretePoseTrajectory < DiscretePoseTrajectory
                                 case 'logSE3'
                                     poses(i) = GP_Pose(Relative2AbsoluteSE3(poses(i-1).get('logSE3Pose'),motion),'logSE3');
                                 case 'SE3'
-                                    assert(size(motion)==[4,4],'Motion input is not an SE(3) matrix.')
+                                    assert(isequal(size(motion),[4,4]),'Motion input is not an SE(3) matrix.')
                                     poses(i) = GP_Pose(Relative2AbsoluteSE3(poses(i-1).get('SE3'),motion),'SE3');                                
                             end
                         end

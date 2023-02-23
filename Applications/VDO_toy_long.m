@@ -28,27 +28,56 @@ config.set('cameraRelativePose', GP_Pose([0;0;0;arot(eul2rot([0, 0, -pi/2]))]));
 %% Environment Parameter
 
 Centre = [5; 10; 15]; % Centre (roughly) of the environment, where the traj sits
-Scale = 20; % Roughly the half size of the Bounding Box of the environment, a radius
+Scale = 200; % Roughly the half size of the Bounding Box of the environment, a radius
+
+staticDim = 3;
+staticLen = 9;
+staticRes = 5;
 
 %% Generate Environment
 
-% robotInitialPose_R3xso3 = [-Scale/2 + Centre(1); -Scale/2 + Centre(2); -Scale/4 + Centre(3); 0; 0; pi/2];
-% robotMotion_R3xso3 = [pi*Scale/nSteps; 0; Scale/(2*nSteps); arot(eul2rot([pi/nSteps,0,0]))];
-robotInitialPose_R3xso3 = [10; 20; 30; 0; 0; 0];
-robotMotion_R3xso3 = [1/nSteps; 0; 0; 0; 0; 0];
+robotInitialPose_rotm = eye(3);
+robotInitialPose_pos = [0; -Scale; 0] + Centre;
+robotInitialPose_SE3 = [robotInitialPose_rotm, robotInitialPose_pos; 0, 0, 0, 1];
+robotMotion_rotm = eul2rot([pi/nSteps, 0, 0]);
+robotMotion_SE3 = [robotMotion_rotm, [pi*Scale/nSteps; 0; Scale/(4*nSteps)]; 0, 0, 0, 1];
 
-
-robotTrajectory = ConstantMotionDiscretePoseTrajectory(t,robotInitialPose_R3xso3,robotMotion_R3xso3,'R3xso3');
+robotTrajectory = ConstantMotionDiscretePoseTrajectory(t,robotInitialPose_SE3,robotMotion_SE3,'SE3');
 cameraTrajectory = RelativePoseTrajectory(robotTrajectory,config.cameraRelativePose);
 
 environment = Environment();
 
-staticDim = 7;
-staticRes = 5;
 staticX = repmat(linspace(1, staticRes*(staticDim-1)+1, staticDim), 1, staticDim) - 25;
-staticZ = reshape(repmat(linspace(1, staticRes*(staticDim-1)+1, 7), staticDim, 1), 1, []) - 15;
 staticY = 10*ones(1, staticDim^2);
-statisPoints = [staticX; staticY; staticZ];
+
+staticTZ = reshape(repmat(linspace(0, Scale/4, staticLen), 3, 1), [1, staticLen*staticDim])... 
+    + 10 + Centre(3); % [Z1, Z1, Z1, Z2, Z2, Z2...]
+staticBZ = reshape(repmat(linspace(0, Scale/4, staticLen), 3, 1), [1, staticLen*staticDim])...
+    - 10 + Centre(3); % [Z1, Z1, Z1, Z2, Z2, Z2...]
+staticLRZ = repmat(linspace(-staticRes, staticRes, staticDim), 1, staticLen)...
+    + reshape(repmat(linspace(0, Scale/4, staticLen), 3, 1), [1, staticLen*staticDim])...
+    + Centre(3); % [Z1, Z2, Z3, Z1, Z2, Z3...]
+
+staticTBX = reshape(repmat(cos(linspace(-pi/2, pi/2, staticLen)), 3, 1), [1, staticLen*staticDim])...
+    .*(repmat(linspace(-staticRes, staticRes, staticDim), 1, staticLen) + Scale) + Centre(1); % [X1, X2, X3, X1, X2, X3...]
+staticLX = reshape(repmat(cos(linspace(-pi/2, pi/2, staticLen)), 3, 1), [1, staticLen*staticDim])...
+    *(Scale - 10) + Centre(1); % [X1, X1, X1, X2, X2, X2...]
+staticRX = reshape(repmat(cos(linspace(-pi/2, pi/2, staticLen)), 3, 1), [1, staticLen*staticDim])...
+    *(Scale + 10) + Centre(1); % [X1, X1, X1, X2, X2, X2...]
+
+staticTBY = reshape(repmat(sin(linspace(-pi/2, pi/2, staticLen)), 3, 1), [1, staticLen*staticDim])...
+    .*(repmat(linspace(-staticRes, staticRes, staticDim), 1, staticLen) + Scale) + Centre(2); % [Y1, Y2, Y3, Y1, Y2, Y3...]
+staticLY = reshape(repmat(sin(linspace(-pi/2, pi/2, staticLen)), 3, 1), [1, staticLen*staticDim])...
+    *(Scale - 10) + Centre(2); % [Y1, Y1, Y1, Y2, Y2, Y2...]
+staticRY = reshape(repmat(sin(linspace(-pi/2, pi/2, staticLen)), 3, 1), [1, staticLen*staticDim])...
+    *(Scale + 10) + Centre(2); % [Y1, Y1, Y1, Y2, Y2, Y2...]
+
+staticT = [staticTBX; staticTBY; staticTZ];
+staticB = [staticTBX; staticTBY; staticBZ];
+staticL = [staticLX; staticLY; staticLRZ];
+staticR = [staticRX; staticRY; staticLRZ];
+
+statisPoints = [staticB, staticT, staticL, staticR];
 environment.addStaticPoints(statisPoints);
 
 
