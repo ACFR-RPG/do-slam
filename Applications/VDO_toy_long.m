@@ -21,7 +21,9 @@ config.set('motionModel','constantSE3MotionDA');
 config.set('std2PointsSE3Motion', [0.05,0.05,0.05]');
 
 % config.set('fieldofView', [-pi/2,pi/2,-pi/3,pi/3,1,40]); % Requires update
-config.set('cameraRelativePose', GP_Pose([0,0,0,0,0,pi/2]'));
+% neg90z_rotm = eul2rotm([0, 0, pi/2]);
+
+config.set('cameraRelativePose', GP_Pose([0;0;0;arot(eul2rot([0, 0, -pi/2]))]));
 
 %% Environment Parameter
 
@@ -32,7 +34,7 @@ Scale = 20; % Roughly the half size of the Bounding Box of the environment, a ra
 
 % robotInitialPose_R3xso3 = [-Scale/2 + Centre(1); -Scale/2 + Centre(2); -Scale/4 + Centre(3); 0; 0; pi/2];
 % robotMotion_R3xso3 = [pi*Scale/nSteps; 0; Scale/(2*nSteps); arot(eul2rot([pi/nSteps,0,0]))];
-robotInitialPose_R3xso3 = [10; 20; 30; 0; 0; pi/2];
+robotInitialPose_R3xso3 = [10; 20; 30; 0; 0; 0];
 robotMotion_R3xso3 = [1/nSteps; 0; 0; 0; 0; 0];
 
 
