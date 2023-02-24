@@ -160,11 +160,11 @@ classdef Environment < ArrayGetSet
         end
        
         
-        function self = addEllipsoid(self,radii,N,parameterisation,trajectory)
+        function self = addEllipsoid(self,radii,N,nSample,parameterisation,trajectory)
             % create relative points
             [positions, links] = generateEllipsoidPoints(radii,N);
             nPositions = size(positions,2);
-            points = positions(:,randsample(nPositions,floor(nPositions/5)));
+            points = positions(:,randsample(nPositions,nSample));
             nPoints = size(points,2);
             
             %initialise points

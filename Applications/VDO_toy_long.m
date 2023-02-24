@@ -34,10 +34,10 @@ staticDim = 3; % How many static points there are on each side (Top, Bottom, Lef
 staticLen = 9; % How many sets of static points there are along the traj
 staticRes = 5; % How far apart the static points are on each side
 % Are there static point on this side (top, bottom, left and right)
-isStaticTop = false;
-isStaticBottom = false;
-isStaticLeft = false;
-isStaticRight = false;
+isStaticTop = true;
+isStaticBottom = true;
+isStaticLeft = true;
+isStaticRight = true;
 
 %% Generate Environment
 
@@ -107,13 +107,13 @@ end
 constantSE3ObjectMotion = [];
 
 primitive1Dis = 15; % Distance to the sensor arc
-primitive1InitialPose_rotm = eye(3);
-primitive1InitialPose_pos = [0; -(Scale-primitive1Dis); 0] + Centre;
+primitive1InitialPose_rotm = eul2rot([(1/10)*pi, 0, 0]);
+primitive1InitialPose_pos = [(Scale-primitive1Dis)*cos(-pi/2+pi/10); (Scale-primitive1Dis)*sin(-pi/2+pi/10); (1/10)*Scale/4] + Centre;
 primitive1InitialPose_SE3 = [primitive1InitialPose_rotm, primitive1InitialPose_pos; 0, 0, 0, 1];
-primitive1Motion_rotm = eul2rot([pi/nSteps, 0, 0]);
-primitive1Motion_SE3 = [primitive1Motion_rotm, [pi*(Scale-primitive1Dis)/nSteps; 0; Scale/(4*nSteps)]; 0, 0, 0, 1];
+primitive1Motion_rotm = eul2rot([(4/5)*pi/nSteps, 0, 0]);
+primitive1Motion_SE3 = [primitive1Motion_rotm, [(4/5)*pi*(Scale-primitive1Dis)/nSteps; 0; Scale/(4*nSteps)]; 0, 0, 0, 1];
 primitive1Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive1InitialPose_SE3,primitive1Motion_SE3,'SE3');
-environment.addEllipsoid([1 1 2.5],8,'R3',primitive1Trajectory); % Radii, Num of faces, parameter type for GP points on surface, traj
+environment.addEllipsoid([1 1 2.5],8,16,'R3',primitive1Trajectory); % Radii, Num of faces, Num of points, parameter type for GP points on surface, traj
 constantSE3ObjectMotion(:,1) = primitive1Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
 
 primitive2Dis = 15; % Distance to the sensor arc
@@ -123,7 +123,7 @@ primitive2InitialPose_SE3 = [primitive2InitialPose_rotm, primitive2InitialPose_p
 primitive2Motion_rotm = eul2rot([-pi/nSteps, 0, 0]);
 primitive2Motion_SE3 = [primitive2Motion_rotm, [pi*(Scale+primitive2Dis)/nSteps; 0; -Scale/(4*nSteps)]; 0, 0, 0, 1];
 primitive2Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive2InitialPose_SE3,primitive2Motion_SE3,'SE3');
-environment.addEllipsoid([1 1 2.5],8,'R3',primitive2Trajectory); % Radii, Num of faces, parameter type for GP points on surface, traj
+environment.addEllipsoid([1 1 2.5],8,16,'R3',primitive2Trajectory); % Radii, Num of faces, Num of points, parameter type for GP points on surface, traj
 constantSE3ObjectMotion(:,2) = primitive2Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
 
 % occlusion sensor
