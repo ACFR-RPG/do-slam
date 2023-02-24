@@ -1,5 +1,5 @@
 clear all 
-% close all 
+close all 
 
 %% 1. Config
 % time
@@ -28,11 +28,16 @@ config.set('cameraRelativePose', GP_Pose([0;0;0;arot(eul2rot([0, 0, -pi/2]))]));
 %% Environment Parameter
 
 Centre = [5; 10; 15]; % Centre (roughly) of the environment, where the traj sits
-Scale = 200; % Roughly the half size of the Bounding Box of the environment, a radius
+Scale = 50; % Roughly the half size of the Bounding Box of the environment, a radius
 
-staticDim = 3;
-staticLen = 9;
-staticRes = 5;
+staticDim = 3; % How many static points there are on each side (Top, Bottom, Left and Right) in one set
+staticLen = 9; % How many sets of static points there are along the traj
+staticRes = 5; % How far apart the static points are on each side
+% Are there static point on this side (top, bottom, left and right)
+isStaticTop = false;
+isStaticBottom = false;
+isStaticLeft = false;
+isStaticRight = false;
 
 %% Generate Environment
 
@@ -79,19 +84,47 @@ staticB = [staticTBX; staticTBY; staticBZ];
 staticL = [staticLX; staticLY; staticLRZ];
 staticR = [staticRX; staticRY; staticLRZ];
 
-statisPoints = [staticB, staticT, staticL, staticR];
-environment.addStaticPoints(statisPoints);
+staticPoints = [];
+if isStaticTop
+    staticPoints = [staticPoints, staticT];
+end
+if isStaticBottom
+    staticPoints = [staticPoints, staticB];
+end
+if isStaticLeft
+    staticPoints = [staticPoints, staticL];
+end
+if isStaticRight
+    staticPoints = [staticPoints, staticR];
+end
+% statisPoints = [staticB, staticT, staticL, staticR];
+% if isStaticTop || isStaticBottom || isStaticLeft || isStaticRight
+if ~isempty(staticPoints)
+    environment.addStaticPoints(staticPoints);
+end
 
 % Dynamic Points
-primitive1InitialPose_R3xso3 = [-15, 5, 5, pi/2, 0, 0]';
-primitive1Motion_R3xso3 = [1*dt; 0; 0; arot(eul2rot([0.105*dt,0,0]))];
-primitive1Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive1InitialPose_R3xso3,primitive1Motion_R3xso3,'R3xso3');
-environment.addEllipsoid([1 1 2.5],8,'R3',primitive1Trajectory);
-
-
 constantSE3ObjectMotion = [];
+
+primitive1Dis = 15; % Distance to the sensor arc
+primitive1InitialPose_rotm = eye(3);
+primitive1InitialPose_pos = [0; -(Scale-primitive1Dis); 0] + Centre;
+primitive1InitialPose_SE3 = [primitive1InitialPose_rotm, primitive1InitialPose_pos; 0, 0, 0, 1];
+primitive1Motion_rotm = eul2rot([pi/nSteps, 0, 0]);
+primitive1Motion_SE3 = [primitive1Motion_rotm, [pi*(Scale-primitive1Dis)/nSteps; 0; Scale/(4*nSteps)]; 0, 0, 0, 1];
+primitive1Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive1InitialPose_SE3,primitive1Motion_SE3,'SE3');
+environment.addEllipsoid([1 1 2.5],8,'R3',primitive1Trajectory); % Radii, Num of faces, parameter type for GP points on surface, traj
 constantSE3ObjectMotion(:,1) = primitive1Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
 
+primitive2Dis = 15; % Distance to the sensor arc
+primitive2InitialPose_rotm = eye(3);
+primitive2InitialPose_pos = [0; Scale+primitive2Dis; Scale/4] + Centre;
+primitive2InitialPose_SE3 = [primitive2InitialPose_rotm, primitive2InitialPose_pos; 0, 0, 0, 1];
+primitive2Motion_rotm = eul2rot([-pi/nSteps, 0, 0]);
+primitive2Motion_SE3 = [primitive2Motion_rotm, [pi*(Scale+primitive2Dis)/nSteps; 0; -Scale/(4*nSteps)]; 0, 0, 0, 1];
+primitive2Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive2InitialPose_SE3,primitive2Motion_SE3,'SE3');
+environment.addEllipsoid([1 1 2.5],8,'R3',primitive2Trajectory); % Radii, Num of faces, parameter type for GP points on surface, traj
+constantSE3ObjectMotion(:,2) = primitive2Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
 
 % occlusion sensor
 sensor = SimulatedEnvironmentOcclusionSensor();
@@ -99,7 +132,12 @@ sensor.addEnvironment(environment);
 sensor.addCamera(config.fieldOfView,cameraTrajectory);
 sensor.setVisibility(config,environment);
 
-%% 4. Plot Environment
+%% Check visibility
+pointRelative = sensor.get('pointObservationRelative');
+visibility = sensor.get('pointVisibility');
+visibleRelative = pointRelative(visibility(:, 2)~=0, 2);
+
+%% Plot Environment
 figure(1)
 viewPoint = [-35,35];
 view(viewPoint)
@@ -115,6 +153,7 @@ zlabel('z (m)')
 hold on
 grid on
 primitive1Trajectory.plot(t,[0 0 0],'axesOFF')
+primitive2Trajectory.plot(t,[0 0 0],'axesOFF')
 
 cameraTrajectory.plot(t,[0 0 1],'axesOFF')
 frames = sensor.plot(t,environment);
@@ -124,6 +163,23 @@ hold off
 % print('VDO_Toy_Environment','-dpdf')
 % implay(frames);
 
-
+%% 5. Generate Measurements & Save to Graph File, load graph file as well
+config.set('constantSE3Motion',constantSE3ObjectMotion);
+     %% 5.1 For initial (without SE3)
+    config.set('pointMotionMeasurement','Off');
+    config.set('measurementsFileName','VDO_toy_measurementsNoSE3.graph');
+    config.set('groundTruthFileName','VDO_toy_groundTruthNoSE3.graph');
+    sensor.generateMeasurements(config);
+    groundTruthNoSE3Cell = graphFileToCell(config,config.groundTruthFileName);
+    measurementsNoSE3Cell = graphFileToCell(config,config.measurementsFileName);
+    
+    %% 5.2 For test (with SE3)
+    config.set('pointMotionMeasurement','point2DataAssociation');
+    config.set('measurementsFileName','VDO_toy_measurements.graph');
+    config.set('groundTruthFileName','VDO_toy_groundTruth.graph');
+    sensor.generateMeasurements(config);
+    writeDataAssociationVerticesEdges_constantSE3Motion(config,constantSE3ObjectMotion);
+    measurementsCell = graphFileToCell(config,config.measurementsFileName);
+    groundTruthCell  = graphFileToCell(config,config.groundTruthFileName);
 
 
