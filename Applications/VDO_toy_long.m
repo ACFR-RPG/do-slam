@@ -188,7 +188,5 @@ config.set('measurementsFileName','VDO_toy_measurements.graph');
 config.set('groundTruthFileName','VDO_toy_groundTruth.graph');
 sensor.generateMeasurements(config);
 writeDataAssociationVerticesEdges_constantSE3Motion(config,constantSE3ObjectMotion);
-measurementsCell = graphFileToCell(config,config.measurementsFileName);
-groundTruthCell  = graphFileToCell(config,config.groundTruthFileName);
 
 
