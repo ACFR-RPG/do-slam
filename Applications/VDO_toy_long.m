@@ -25,6 +25,23 @@ config.set('std2PointsSE3Motion', [0.05,0.05,0.05]');
 
 config.set('cameraRelativePose', GP_Pose([0;0;0;arot(eul2rot([0, 0, -pi/2]))]));
 
+%% Graph File labels
+
+config.set('poseVertexLabel'     ,'VERTEX_POSE_R3_SO3');
+config.set('pointVertexLabel'    ,'VERTEX_POINT_3D');
+config.set('planeVertexLabel'    ,'VERTEX_PLANE_4D');
+config.set('posePoseEdgeLabel'   ,'EDGE_R3_SO3');
+config.set('posePointEdgeLabel'  ,'EDGE_3D');
+config.set('pointPlaneEdgeLabel' ,'EDGE_1D');
+config.set('pointPointEdgeLabel' ,'EDGE_2POINTS');
+config.set('pointsDataAssociationLabel','2PointsDataAssociation')
+config.set('point3EdgeLabel','EDGE_3POINTS');
+config.set('velocityVertexLabel','VERTEX_VELOCITY');
+config.set('pointVelocityEdgeLabel','EDGE_2POINTS_VELOCITY');
+config.set('SE3MotionVertexLabel','VERTEX_SE3Motion');
+config.set('pointSE3MotionEdgeLabel','EDGE_2POINTS_SE3Motion');
+config.set('posePriorEdgeLabel','EDGE_6D');
+
 %% Environment Parameter
 
 Centre = [5; 10; 15]; % Centre (roughly) of the environment, where the traj sits
@@ -106,17 +123,17 @@ end
 % Dynamic Points
 constantSE3ObjectMotion = [];
 
-primitive1Dis = 15; % Distance to the sensor arc
+primitive1Dis = 5; % Distance to the sensor arc
 primitive1InitialPose_rotm = eul2rot([(1/10)*pi, 0, 0]);
 primitive1InitialPose_pos = [(Scale-primitive1Dis)*cos(-pi/2+pi/10); (Scale-primitive1Dis)*sin(-pi/2+pi/10); (1/10)*Scale/4] + Centre;
 primitive1InitialPose_SE3 = [primitive1InitialPose_rotm, primitive1InitialPose_pos; 0, 0, 0, 1];
-primitive1Motion_rotm = eul2rot([(4/5)*pi/nSteps, 0, 0]);
-primitive1Motion_SE3 = [primitive1Motion_rotm, [(4/5)*pi*(Scale-primitive1Dis)/nSteps; 0; Scale/(4*nSteps)]; 0, 0, 0, 1];
+primitive1Motion_rotm = eul2rot([(9/10)*pi/nSteps, 0, 0]);
+primitive1Motion_SE3 = [primitive1Motion_rotm, [(9/10)*pi*(Scale-primitive1Dis)/nSteps; 0; (9/10)*Scale/(4*nSteps)]; 0, 0, 0, 1];
 primitive1Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive1InitialPose_SE3,primitive1Motion_SE3,'SE3');
 environment.addEllipsoid([1 1 2.5],8,16,'R3',primitive1Trajectory); % Radii, Num of faces, Num of points, parameter type for GP points on surface, traj
 constantSE3ObjectMotion(:,1) = primitive1Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
 
-primitive2Dis = 15; % Distance to the sensor arc
+primitive2Dis = 5; % Distance to the sensor arc
 primitive2InitialPose_rotm = eye(3);
 primitive2InitialPose_pos = [0; Scale+primitive2Dis; Scale/4] + Centre;
 primitive2InitialPose_SE3 = [primitive2InitialPose_rotm, primitive2InitialPose_pos; 0, 0, 0, 1];
@@ -165,21 +182,13 @@ hold off
 
 %% 5. Generate Measurements & Save to Graph File, load graph file as well
 config.set('constantSE3Motion',constantSE3ObjectMotion);
-     %% 5.1 For initial (without SE3)
-    config.set('pointMotionMeasurement','Off');
-    config.set('measurementsFileName','VDO_toy_measurementsNoSE3.graph');
-    config.set('groundTruthFileName','VDO_toy_groundTruthNoSE3.graph');
-    sensor.generateMeasurements(config);
-    groundTruthNoSE3Cell = graphFileToCell(config,config.groundTruthFileName);
-    measurementsNoSE3Cell = graphFileToCell(config,config.measurementsFileName);
-    
-    %% 5.2 For test (with SE3)
-    config.set('pointMotionMeasurement','point2DataAssociation');
-    config.set('measurementsFileName','VDO_toy_measurements.graph');
-    config.set('groundTruthFileName','VDO_toy_groundTruth.graph');
-    sensor.generateMeasurements(config);
-    writeDataAssociationVerticesEdges_constantSE3Motion(config,constantSE3ObjectMotion);
-    measurementsCell = graphFileToCell(config,config.measurementsFileName);
-    groundTruthCell  = graphFileToCell(config,config.groundTruthFileName);
+
+config.set('pointMotionMeasurement','point2DataAssociation');
+config.set('measurementsFileName','VDO_toy_measurements.graph');
+config.set('groundTruthFileName','VDO_toy_groundTruth.graph');
+sensor.generateMeasurements(config);
+writeDataAssociationVerticesEdges_constantSE3Motion(config,constantSE3ObjectMotion);
+measurementsCell = graphFileToCell(config,config.measurementsFileName);
+groundTruthCell  = graphFileToCell(config,config.groundTruthFileName);
 
 
