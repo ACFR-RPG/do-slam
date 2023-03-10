@@ -27,14 +27,20 @@ config.set('cameraRelativePose', GP_Pose([0;0;0;arot(eul2rot([0, 0, -pi/2]))]));
 
 %% Graph File labels
 
-config.set('poseVertexLabel'     ,'VERTEX_POSE_R3_SO3');
-config.set('pointVertexLabel'    ,'VERTEX_POINT_3D');
+% config.set('poseVertexLabel'     ,'VERTEX_POSE_R3_SO3');
+config.set('poseVertexLabel'     ,'VERTEX_SE3:QUAT');
+% config.set('posePoseEdgeLabel'   ,'EDGE_R3_SO3');
+config.set('posePoseEdgeLabel'   ,'EDGE_SE3');
+% config.set('posePointEdgeLabel'  ,'EDGE_3D');
+config.set('posePointEdgeLabel'  ,'EDGE_SE3_TRACKXYZ');
+% config.set('pointVertexLabel'    ,'VERTEX_POINT_3D');
+config.set('pointVertexLabel'    ,'VERTEX_TRACKXYZ');
+
+config.set('pointsDataAssociationLabel','2PointsDataAssociation')
+
 config.set('planeVertexLabel'    ,'VERTEX_PLANE_4D');
-config.set('posePoseEdgeLabel'   ,'EDGE_R3_SO3');
-config.set('posePointEdgeLabel'  ,'EDGE_3D');
 config.set('pointPlaneEdgeLabel' ,'EDGE_1D');
 config.set('pointPointEdgeLabel' ,'EDGE_2POINTS');
-config.set('pointsDataAssociationLabel','2PointsDataAssociation')
 config.set('point3EdgeLabel','EDGE_3POINTS');
 config.set('velocityVertexLabel','VERTEX_VELOCITY');
 config.set('pointVelocityEdgeLabel','EDGE_2POINTS_VELOCITY');

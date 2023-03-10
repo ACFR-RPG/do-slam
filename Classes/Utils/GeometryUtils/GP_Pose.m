@@ -68,6 +68,11 @@ classdef GP_Pose < GeometricPrimitive
                     value = self.R3xso3Pose(4:6);
                 case 'R'
                     value = rot(self.R3xso3Pose(4:6));
+                case 'Quat'
+                    t = self.R3xso3Pose(1:3,1);
+                    angle = norm(self.R3xso3Pose(4:6,1));
+                    unit = self.R3xso3Pose(4:6,1)/angle;
+                    value = [t; unit*sin(angle/2); cos(angle/2)];
                 otherwise 
                     error('Error: invalid property')
             end
