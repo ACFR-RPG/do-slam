@@ -78,6 +78,8 @@ config.set('stdPointPrior',[0.01,0.01,0.1]');
 rot = eul2rot([pi/180,pi/180,pi/180]); % 1 degree position error
 orientation = arot(rot);
 config.set('stdPosePose'  ,[0.03,0.03,0.03,orientation']');
+quaternion = rot2quat(orientation);
+config.set('stdPosePoseQuat',[0.03,0.03,0.03,quaternion']');
 
 % measurement errors
 config.set('stdPosePoint' ,[0.03,0.03,0.03]');

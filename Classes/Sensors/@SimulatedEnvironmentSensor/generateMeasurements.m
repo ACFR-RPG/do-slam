@@ -68,8 +68,14 @@ for i = 1:nSteps
         case 'R3xso3'
             value = currentSensorPose.get('R3xso3Pose');
             valueMeas = currentSensorPoseNoisy.get('R3xso3Pose');
+            quat = rot2quat(value(4:6));
+            value = [value(1:3); quat];
+            quatMeas = rot2quat(valueMeas(4:6));
+            valueMeas = [valueMeas(1:3); quatMeas];
             if i > 1
             prevValue = self.get('GP_Pose',t(i-1)).get('R3xso3Pose');
+            prevQuat = rot2quat(prevValue(4:6));
+            prevValue = [prevValue(1:3); prevQuat];
             end
         case 'logSE3'
             value = currentSensorPose.get('logSE3Pose');
@@ -111,17 +117,24 @@ for i = 1:nSteps
             case 'R3xso3'
                 valueGT   = poseRelative.get('R3xso3Pose');
                 valueMeas = poseRelativeNoisy.get('R3xso3Pose');
+                quat = rot2quat(valueGT(4:6));
+                valueGT = [valueGT(1:3); quat];
+                quatMeas = rot2quat(valueMeas(4:6));
+                valueMeas = [valueMeas(1:3); quatMeas];
             case 'logSE3'
                 valueGT   = poseRelative.get('logSE3Pose');
                 valueMeas = poseRelativeNoisy.get('logSE3Pose');
             otherwise
                 error('Error: unsupported pose parameterisation')
         end
-        if ~prod(valueGT == zeros(6,1))
-            covariance = config.covPosePose;
+        if ~prod(valueGT == zeros(length(valueGT),1))
             index1 = cameraVertexIndexes(i-1);
             index2 = cameraVertexIndexes(i);
-            writeEdge(label,index1,index2,valueGT,zeros(1, 6),gtFileID);
+            writeEdge(label,index1,index2,valueGT,zeros(1, length(valueGT)),gtFileID);
+            covariance = config.covPosePose;
+            if (length(valueMeas) == 7)
+                covariance = config.covPosePoseQuat;
+            end
             writeEdge(label,index1,index2,valueMeas,covariance,mFileID);
         end
     end
@@ -312,6 +325,9 @@ for i = 1:nSteps
 
 
         end
+    end
+
+    for j = dynamicObjectIndexes    
     end
     
     %point-plane observations

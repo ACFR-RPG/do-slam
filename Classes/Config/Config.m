@@ -44,6 +44,7 @@ classdef Config < ArrayGetSet
         stdPosePrior
         stdPointPrior
         stdPosePose
+        stdPosePoseQuat
         stdPosePoint
         stdPosePixel
         stdPointPoint
@@ -176,6 +177,7 @@ classdef Config < ArrayGetSet
         covPosePrior
         covPointPrior
         covPosePose
+        covPosePoseQuat
         covPosePoint
         covPointPoint
         cov3Points
@@ -214,6 +216,9 @@ classdef Config < ArrayGetSet
         end
         function covPosePose = get.covPosePose(obj)
             covPosePose = stdToCovariance(obj.stdPosePose);
+        end
+        function covPosePoseQuat = get.covPosePoseQuat(obj)
+            covPosePoseQuat = stdToCovariance(obj.stdPosePoseQuat);
         end
         function covPosePoint = get.covPosePoint(obj)
             covPosePoint = stdToCovariance(obj.stdPosePoint);
