@@ -141,7 +141,7 @@ for i = 1:nSteps
     % Store the current pose noisy into prev
     prevSensorPoseNoisy = currentSensorPoseNoisy; 
 
-    %point observations
+    % point observations
     for j = staticPointIndexes
         jPoint = self.get('points',j);
         jPointVisible = self.pointVisibility(j,i);
@@ -194,6 +194,7 @@ for i = 1:nSteps
         end
     end
     
+    % Dynamic point observations
     for j=dynamicPointIndexes
         jPoint = self.get('points',j);
         jPointVisible = self.pointVisibility(j,i);
@@ -326,10 +327,43 @@ for i = 1:nSteps
 
         end
     end
-
-    for j = dynamicObjectIndexes    
-    end
     
+    % Dynamic object poses
+    for j = 1:objectCount
+        jObject = self.get('objects',j);
+        currObjPose = jObject.get('trajectory').get('GP_Pose',t(i));
+        currObjPoseNoisy = currObjPose.addNoise(config.noiseModel,zeros(size(config.stdPosePose)),config.stdPosePose);
+        switch config.poseParameterisation
+            case 'R3xso3'
+                value = currObjPose.get('R3xso3Pose');
+                valueMeas = currObjPoseNoisy.get('R3xso3Pose');
+                quat = rot2quat(value(4:6));
+                value = [value(1:3); quat];
+                quatMeas = rot2quat(valueMeas(4:6));
+                valueMeas = [valueMeas(1:3); quatMeas];
+                if i > 1
+                prevValue = self.get('GP_Pose',t(i-1)).get('R3xso3Pose');
+                prevQuat = rot2quat(prevValue(4:6));
+                prevValue = [prevValue(1:3); prevQuat];
+                end
+            case 'logSE3'
+                value = currObjPose.get('logSE3Pose');
+                if i > 1 
+                prevValue = self.get('GP_Pose',t(i-1)).get('logSE3Pose');
+                valueMeas = currObjPoseNoisy.get('logSE3Pose');
+                end
+            otherwise
+                error('Error: unsupported pose parameterisation')
+        end
+        vertexCount = vertexCount + 1;
+        cameraVertexIndexes(i) = vertexCount;
+        %WRITE VERTEX TO FILE
+        label = config.pointSE3MotionEdgeLabel;
+        index = cameraVertexIndexes(i);
+        writeVertex(label,index,value,gtFileID);
+        writeVertex(label,index,value,mFileID);
+    end
+
     %point-plane observations
     for j = staticObjectIndexes
         jObject = self.get('objects',j);
