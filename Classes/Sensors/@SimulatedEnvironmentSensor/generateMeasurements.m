@@ -26,6 +26,7 @@ vertexCount         = 0;
 objectCount         = 0;
 cameraVertexIndexes = zeros(1,nSteps);
 pointVertexIndexes = zeros(1,nSteps);
+objectVertexIndexes = zeros(self.nObjects, nS);
 
 % find indexes for static and dynamic points
 staticPointLogical      = self.get('points').get('static');
@@ -140,6 +141,43 @@ for i = 1:nSteps
     end
     % Store the current pose noisy into prev
     prevSensorPoseNoisy = currentSensorPoseNoisy; 
+
+
+    % Dynamic object poses
+    for j = 1:objectCount
+        jObject = self.get('objects',j);
+        currObjPose = jObject.get('trajectory').get('GP_Pose',t(i));
+        currObjPoseNoisy = currObjPose.addNoise(config.noiseModel,zeros(size(config.stdPosePose)),config.stdPosePose);
+        switch config.poseParameterisation
+            case 'R3xso3'
+                value = currObjPose.get('R3xso3Pose');
+                valueMeas = currObjPoseNoisy.get('R3xso3Pose');
+                quat = rot2quat(value(4:6));
+                value = [value(1:3); quat];
+                quatMeas = rot2quat(valueMeas(4:6));
+                valueMeas = [valueMeas(1:3); quatMeas];
+                if i > 1
+                prevValue = self.get('GP_Pose',t(i-1)).get('R3xso3Pose');
+                prevQuat = rot2quat(prevValue(4:6));
+                prevValue = [prevValue(1:3); prevQuat];
+                end
+            case 'logSE3'
+                value = currObjPose.get('logSE3Pose');
+                if i > 1 
+                prevValue = self.get('GP_Pose',t(i-1)).get('logSE3Pose');
+                valueMeas = currObjPoseNoisy.get('logSE3Pose');
+                end
+            otherwise
+                error('Error: unsupported pose parameterisation')
+        end
+        vertexCount = vertexCount + 1;
+        objectVertexIndexes(j, i) = vertexCount;
+        %WRITE VERTEX TO FILE
+        label = config.pointSE3MotionEdgeLabel;
+        index = objectVertexIndexes(j, i);
+        writeVertex(label,index,value,gtFileID);
+        writeVertex(label,index,value,mFileID);
+    end
 
     % point observations
     for j = staticPointIndexes
@@ -328,42 +366,6 @@ for i = 1:nSteps
         end
     end
     
-    % Dynamic object poses
-    for j = 1:objectCount
-        jObject = self.get('objects',j);
-        currObjPose = jObject.get('trajectory').get('GP_Pose',t(i));
-        currObjPoseNoisy = currObjPose.addNoise(config.noiseModel,zeros(size(config.stdPosePose)),config.stdPosePose);
-        switch config.poseParameterisation
-            case 'R3xso3'
-                value = currObjPose.get('R3xso3Pose');
-                valueMeas = currObjPoseNoisy.get('R3xso3Pose');
-                quat = rot2quat(value(4:6));
-                value = [value(1:3); quat];
-                quatMeas = rot2quat(valueMeas(4:6));
-                valueMeas = [valueMeas(1:3); quatMeas];
-                if i > 1
-                prevValue = self.get('GP_Pose',t(i-1)).get('R3xso3Pose');
-                prevQuat = rot2quat(prevValue(4:6));
-                prevValue = [prevValue(1:3); prevQuat];
-                end
-            case 'logSE3'
-                value = currObjPose.get('logSE3Pose');
-                if i > 1 
-                prevValue = self.get('GP_Pose',t(i-1)).get('logSE3Pose');
-                valueMeas = currObjPoseNoisy.get('logSE3Pose');
-                end
-            otherwise
-                error('Error: unsupported pose parameterisation')
-        end
-        vertexCount = vertexCount + 1;
-        cameraVertexIndexes(i) = vertexCount;
-        %WRITE VERTEX TO FILE
-        label = config.pointSE3MotionEdgeLabel;
-        index = cameraVertexIndexes(i);
-        writeVertex(label,index,value,gtFileID);
-        writeVertex(label,index,value,mFileID);
-    end
-
     %point-plane observations
     for j = staticObjectIndexes
         jObject = self.get('objects',j);
