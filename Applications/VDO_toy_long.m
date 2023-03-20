@@ -190,9 +190,12 @@ hold off
 %% 5. Generate Measurements & Save to Graph File, load graph file as well
 config.set('constantSE3Motion',constantSE3ObjectMotion);
 
+datestring = string(datetime('now', 'Format', 'yyyyMMdd_HHmmSS'));
 config.set('pointMotionMeasurement','point2DataAssociation');
-config.set('measurementsFileName','VDO_toy_measurements.graph');
-config.set('groundTruthFileName','VDO_toy_groundTruth.graph');
+status = mkdir(strcat(config.folderPath,config.sep,'Data',config.sep,config.graphFileFolderName,config.sep,datestring));
+
+config.set('measurementsFileName', strcat(datestring, '/VDO_toy_measurements.graph'));
+config.set('groundTruthFileName', strcat(datestring, '/VDO_toy_groundTruth.graph'));
 sensor.generateMeasurements(config);
 % writeDataAssociationVerticesEdges_constantSE3Motion(config,constantSE3ObjectMotion);
 
