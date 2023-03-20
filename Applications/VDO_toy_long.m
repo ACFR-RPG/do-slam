@@ -35,11 +35,10 @@ config.set('posePoseEdgeLabel'   ,'EDGE_SE3');
 config.set('posePointEdgeLabel'  ,'EDGE_SE3_TRACKXYZ');
 % config.set('pointVertexLabel'    ,'VERTEX_POINT_3D');
 config.set('pointVertexLabel'    ,'VERTEX_TRACKXYZ');
-% config.set('pointSE3MotionEdgeLabel','EDGE_2POINTS_SE3Motion');
-config.set('pointSE3MotionEdgeLabel','EDGE_SE3_MOTION');
 % config.set('pointsDataAssociationLabel','point2DataAssociation')
 config.set('pointsDataAssociationLabel','EDGE_SE3_MOTION')
 
+config.set('pointSE3MotionEdgeLabel','EDGE_2POINTS_SE3Motion');
 config.set('planeVertexLabel'    ,'VERTEX_PLANE_4D');
 config.set('pointPlaneEdgeLabel' ,'EDGE_1D');
 config.set('pointPointEdgeLabel' ,'EDGE_2POINTS');

@@ -26,7 +26,8 @@ vertexCount         = 0;
 objectCount         = 0;
 cameraVertexIndexes = zeros(1,nSteps);
 pointVertexIndexes = zeros(1,nSteps);
-objectVertexIndexes = zeros(self.nObjects, nS);
+objectVertexIndexes = zeros(self.nObjects, nSteps);
+motionVertexIndices = zeros(self.nObjects, nSteps);
 
 % find indexes for static and dynamic points
 staticPointLogical      = self.get('points').get('static');
@@ -43,6 +44,9 @@ staticPointIndexes      = find(staticPointLogical);
 staticObjectIndexes  = find(staticObjectLogical);
 dynamicPointIndexes     = find(dynamicPointLogical);
 dynamicObjectIndexes = find(dynamicObjectLogical);
+
+currObjPosesNoisy = GP_Pose.empty;
+prevObjPosesNoisy = GP_Pose.empty;
 
 % error check for visibility
 if isempty(self.pointVisibility)
@@ -148,6 +152,7 @@ for i = 1:nSteps
         jObject = self.get('objects',j);
         currObjPose = jObject.get('trajectory').get('GP_Pose',t(i));
         currObjPoseNoisy = currObjPose.addNoise(config.noiseModel,zeros(size(config.stdPosePose)),config.stdPosePose);
+        currObjPosesNoisy(j) = currObjPoseNoisy;
         switch config.poseParameterisation
             case 'R3xso3'
                 value = currObjPose.get('R3xso3Pose');
@@ -173,10 +178,44 @@ for i = 1:nSteps
         vertexCount = vertexCount + 1;
         objectVertexIndexes(j, i) = vertexCount;
         %WRITE VERTEX TO FILE
-        label = config.pointSE3MotionEdgeLabel;
+        label = config.poseVertexLabel;
         index = objectVertexIndexes(j, i);
         writeVertex(label,index,value,gtFileID);
-        writeVertex(label,index,value,mFileID);
+        writeVertex(label,index,valueMeas,mFileID);
+    end
+
+    % Dynamic object motions
+    if i > 1
+        for j = 1:objectCount
+            jObject = self.get('objects',j);
+            currObjPose = jObject.get('trajectory').get('GP_Pose',t(i));
+            PrevObjPose = jObject.get('trajectory').get('GP_Pose',t(i-1));
+            currObjPoseNoisy = currObjPosesNoisy(j);
+            prevObjPoseNoisy = prevObjPosesNoisy(j);
+            objMotion = currObjPose.AbsoluteToRelativePose(PrevObjPose);
+            objMotionNoisy = currObjPoseNoisy.AbsoluteToRelativePose(prevObjPoseNoisy);
+            switch config.poseParameterisation
+                case 'R3xso3'
+                    valueGT   = objMotion.get('R3xso3Pose');
+                    valueMeas = objMotionNoisy.get('R3xso3Pose');
+                    quat = rot2quat(valueGT(4:6));
+                    valueGT = [valueGT(1:3); quat];
+                    quatMeas = rot2quat(valueMeas(4:6));
+                    valueMeas = [valueMeas(1:3); quatMeas];
+                case 'logSE3'
+                    valueGT   = objMotion.get('logSE3Pose');
+                    valueMeas = objMotionNoisy.get('logSE3Pose');
+                otherwise
+                    error('Error: unsupported pose parameterisation')
+            end
+            vertexCount = vertexCount + 1;
+            motionVertexIndices(j, i) = vertexCount;
+            %WRITE VERTEX TO FILE
+            label = config.poseVertexLabel;
+            index = motionVertexIndices(j, i);
+            writeVertex(label,index,valueGT,gtFileID);
+            writeVertex(label,index,valueMeas,mFileID);
+        end
     end
 
     % point observations
@@ -283,8 +322,38 @@ for i = 1:nSteps
                         indexPointCurr = vertexIndexes(end);
                         object = jPoint.get('objectIndexes');
                         objectIndex = self.get('objects',object(1)).get('vertexIndex');
-                        fprintf(gtFileID,'%s %d %d %d\n',label,indexPointPrev,indexPointCurr,objectIndex(end));
-                        fprintf(mFileID,'%s %d %d %d\n',label,indexPointPrev,indexPointCurr,objectIndex(end));
+                        % Get connected object motion
+                        jObject = self.get('objects', objectIndex(end));
+                        currObjPose = jObject.get('trajectory').get('GP_Pose',t(i));
+                        PrevObjPose = jObject.get('trajectory').get('GP_Pose',t(i-1));
+                        currObjPoseNoisy = currObjPosesNoisy(objectIndex(end));
+                        prevObjPoseNoisy = prevObjPosesNoisy(objectIndex(end));
+                        objMotion = currObjPose.AbsoluteToRelativePose(PrevObjPose);
+                        objMotionNoisy = currObjPoseNoisy.AbsoluteToRelativePose(prevObjPoseNoisy);
+                        switch config.poseParameterisation
+                            case 'R3xso3'
+                                valueGT   = objMotion.get('R3xso3Pose');
+                                valueMeas = objMotionNoisy.get('R3xso3Pose');
+                                quat = rot2quat(valueGT(4:6));
+                                valueGT = [valueGT(1:3); quat];
+                                quatMeas = rot2quat(valueMeas(4:6));
+                                valueMeas = [valueMeas(1:3); quatMeas];
+                            case 'logSE3'
+                                valueGT   = objMotion.get('logSE3Pose');
+                                valueMeas = objMotionNoisy.get('logSE3Pose');
+                            otherwise
+                                error('Error: unsupported pose parameterisation')
+                        end
+                        covariance = config.covPosePose;
+                        if (length(valueMeas) == 7)
+                            covariance = config.covPosePoseQuat;
+                        end
+                        fprintf(gtFileID,'%s %d %d %d',label,indexPointPrev,indexPointCurr,motionVertexIndices(objectIndex(end), end));
+                        formatSpec = strcat(repmat(' %0.9f',1,numel(valueGT)), repmat(' %0.9f',1,numel(covariance)),'\n');
+                        fprintf(gtFileID,formatSpec,valueGT,covariance);
+                        fprintf(mFileID,'%s %d %d %d',label,indexPointPrev,indexPointCurr,motionVertexIndices(objectIndex(end), end));
+                        formatSpec = strcat(repmat(' %0.9f',1,numel(valueGT)), repmat(' %0.9f',1,numel(covariance)),'\n');
+                        fprintf(mFileID,formatSpec,valueMeas,covariance);
                     case 'point2Edge'
                         label = config.pointPointEdgeLabel;
                         covariance = config.covPointPoint;
@@ -365,6 +434,8 @@ for i = 1:nSteps
 
         end
     end
+    prevObjPosesNoisy = currObjPosesNoisy;
+
     
     %point-plane observations
     for j = staticObjectIndexes
