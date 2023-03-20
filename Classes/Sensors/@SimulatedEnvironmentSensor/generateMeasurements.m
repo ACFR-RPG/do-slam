@@ -348,10 +348,11 @@ for i = 1:nSteps
                         if (length(valueMeas) == 7)
                             covariance = config.covPosePoseQuat;
                         end
-                        fprintf(gtFileID,'%s %d %d %d',label,indexPointPrev,indexPointCurr,motionVertexIndices(objectIndex(end), end));
+                        covariance = covToUpperTriVec(covariance);
+                        fprintf(gtFileID,'%s %d %d %d',label,indexPointPrev,indexPointCurr,motionVertexIndices(objectIndex(end), i));
                         formatSpec = strcat(repmat(' %0.9f',1,numel(valueGT)), repmat(' %0.9f',1,numel(covariance)),'\n');
                         fprintf(gtFileID,formatSpec,valueGT,covariance);
-                        fprintf(mFileID,'%s %d %d %d',label,indexPointPrev,indexPointCurr,motionVertexIndices(objectIndex(end), end));
+                        fprintf(mFileID,'%s %d %d %d',label,indexPointPrev,indexPointCurr,motionVertexIndices(objectIndex(end), i));
                         formatSpec = strcat(repmat(' %0.9f',1,numel(valueGT)), repmat(' %0.9f',1,numel(covariance)),'\n');
                         fprintf(mFileID,formatSpec,valueMeas,covariance);
                     case 'point2Edge'
