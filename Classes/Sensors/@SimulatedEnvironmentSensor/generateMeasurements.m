@@ -137,9 +137,6 @@ for i = 1:nSteps
             index2 = cameraVertexIndexes(i);
             writeEdge(label,index1,index2,valueGT,zeros(1, length(config.covPosePose)),gtFileID);
             covariance = config.covPosePose;
-            if (length(valueMeas) == 7)
-                covariance = config.covPosePoseQuat;
-            end
             writeEdge(label,index1,index2,valueMeas,covariance,mFileID);
         end
     else
