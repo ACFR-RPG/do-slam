@@ -82,7 +82,7 @@ quaternion = rot2quat(orientation);
 config.set('stdPosePoseQuat',[0.03,0.03,0.03,quaternion']');
 
 % measurement errors
-config.set('stdPosePoint' ,[0.03,0.03,0.03]');
+config.set('stdPosePoint' ,[9.0,9.0,9.0]');
 config.set('stdPointPlane',0.001);
 % set properties of CameraConfig
 config.set('fieldOfView',[-pi/2,pi/2,-pi/3,pi/3,1,40]); %az,el,r limits

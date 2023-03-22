@@ -12,6 +12,8 @@ formatSpec = strcat('%s',...
                     repmat(' %d',1,numel(vOut)),...
                     repmat(' %0.9f',1,numel(value)),...
                     repmat(' %0.9f',1,numel(covariance)),'\n');
-fprintf(fileID,formatSpec,label,vIn,vOut,value,covariance);
+cov_inv = covariance;
+cov_inv(cov_inv~=0) = 1./cov_inv(cov_inv~=0);
+fprintf(fileID,formatSpec,label,vIn,vOut,value,cov_inv);
 end
 
