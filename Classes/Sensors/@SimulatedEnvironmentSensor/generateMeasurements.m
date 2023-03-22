@@ -135,7 +135,7 @@ for i = 1:nSteps
         if ~prod(valueGT == zeros(length(valueGT),1))
             index1 = cameraVertexIndexes(i-1);
             index2 = cameraVertexIndexes(i);
-            writeEdge(label,index1,index2,valueGT,zeros(1, length(valueGT)),gtFileID);
+            writeEdge(label,index1,index2,valueGT,zeros(1, length(config.covPosePose)),gtFileID);
             covariance = config.covPosePose;
             if (length(valueMeas) == 7)
                 covariance = config.covPosePoseQuat;
@@ -322,32 +322,31 @@ for i = 1:nSteps
                         indexPointCurr = vertexIndexes(end);
                         object = jPoint.get('objectIndexes');
                         objectIndex = self.get('objects',object(1)).get('vertexIndex');
-                        % Get connected object motion
-                        jObject = self.get('objects', objectIndex(end));
-                        currObjPose = jObject.get('trajectory').get('GP_Pose',t(i));
-                        PrevObjPose = jObject.get('trajectory').get('GP_Pose',t(i-1));
-                        currObjPoseNoisy = currObjPosesNoisy(objectIndex(end));
-                        prevObjPoseNoisy = prevObjPosesNoisy(objectIndex(end));
-                        objMotion = currObjPose.AbsoluteToRelativePose(PrevObjPose);
-                        objMotionNoisy = currObjPoseNoisy.AbsoluteToRelativePose(prevObjPoseNoisy);
-                        switch config.poseParameterisation
-                            case 'R3xso3'
-                                valueGT   = objMotion.get('R3xso3Pose');
-                                valueMeas = objMotionNoisy.get('R3xso3Pose');
-                                quat = rot2quat(valueGT(4:6));
-                                valueGT = [valueGT(1:3); quat];
-                                quatMeas = rot2quat(valueMeas(4:6));
-                                valueMeas = [valueMeas(1:3); quatMeas];
-                            case 'logSE3'
-                                valueGT   = objMotion.get('logSE3Pose');
-                                valueMeas = objMotionNoisy.get('logSE3Pose');
-                            otherwise
-                                error('Error: unsupported pose parameterisation')
-                        end
-                        covariance = config.covPosePose;
-                        if (length(valueMeas) == 7)
-                            covariance = config.covPosePoseQuat;
-                        end
+                        valueGT = zeros(3, 1);
+                        valueMeas = zeros(3, 1);
+%                         % Get connected object motion
+%                         jObject = self.get('objects', objectIndex(end));
+%                         currObjPose = jObject.get('trajectory').get('GP_Pose',t(i));
+%                         PrevObjPose = jObject.get('trajectory').get('GP_Pose',t(i-1));
+%                         currObjPoseNoisy = currObjPosesNoisy(objectIndex(end));
+%                         prevObjPoseNoisy = prevObjPosesNoisy(objectIndex(end));
+%                         objMotion = currObjPose.AbsoluteToRelativePose(PrevObjPose);
+%                         objMotionNoisy = currObjPoseNoisy.AbsoluteToRelativePose(prevObjPoseNoisy);
+%                         switch config.poseParameterisation
+%                             case 'R3xso3'
+%                                 valueGT   = objMotion.get('R3xso3Pose');
+%                                 valueMeas = objMotionNoisy.get('R3xso3Pose');
+%                                 quat = rot2quat(valueGT(4:6));
+%                                 valueGT = [valueGT(1:3); quat];
+%                                 quatMeas = rot2quat(valueMeas(4:6));
+%                                 valueMeas = [valueMeas(1:3); quatMeas];
+%                             case 'logSE3'
+%                                 valueGT   = objMotion.get('logSE3Pose');
+%                                 valueMeas = objMotionNoisy.get('logSE3Pose');
+%                             otherwise
+%                                 error('Error: unsupported pose parameterisation')
+%                         end
+                        covariance = config.covPosePoint;
                         covariance = covToUpperTriVec(covariance);
                         fprintf(gtFileID,'%s %d %d %d',label,indexPointPrev,indexPointCurr,motionVertexIndices(objectIndex(end), i));
                         formatSpec = strcat(repmat(' %0.9f',1,numel(valueGT)), repmat(' %0.9f',1,numel(covariance)),'\n');

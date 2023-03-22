@@ -30,7 +30,7 @@ config.set('cameraRelativePose', GP_Pose([0;0;0;arot(eul2rot([0, 0, -pi/2]))]));
 % config.set('poseVertexLabel'     ,'VERTEX_POSE_R3_SO3');
 config.set('poseVertexLabel'     ,'VERTEX_SE3:QUAT');
 % config.set('posePoseEdgeLabel'   ,'EDGE_R3_SO3');
-config.set('posePoseEdgeLabel'   ,'EDGE_SE3');
+config.set('posePoseEdgeLabel'   ,'EDGE_SE3:QUAT');
 % config.set('posePointEdgeLabel'  ,'EDGE_3D');
 config.set('posePointEdgeLabel'  ,'EDGE_SE3_TRACKXYZ');
 % config.set('pointVertexLabel'    ,'VERTEX_POINT_3D');
