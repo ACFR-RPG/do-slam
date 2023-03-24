@@ -49,6 +49,13 @@ config.set('SE3MotionVertexLabel','VERTEX_SE3Motion');
 config.set('pointSE3MotionEdgeLabel','EDGE_2POINTS_SE3Motion');
 config.set('posePriorEdgeLabel','EDGE_6D');
 
+%% Adjust standard deviation
+
+rot = eul2rot([pi/180,pi/180,pi/180]); % 1 degree position error
+orientation = arot(rot);
+config.set('stdPosePose'  ,[0.03,0.03,0.03,orientation']');
+config.set('stdPosePoint' ,[0.1,0.1,0.1]');
+
 %% Environment Parameter
 
 Centre = [5; 10; 15]; % Centre (roughly) of the environment, where the traj sits
@@ -60,8 +67,8 @@ staticRes = 5; % How far apart the static points are on each side
 % Are there static point on this side (top, bottom, left and right)
 isStaticTop = true;
 isStaticBottom = true;
-isStaticLeft = true;
-isStaticRight = true;
+isStaticLeft = false;
+isStaticRight = false;
 
 %% Generate Environment
 
