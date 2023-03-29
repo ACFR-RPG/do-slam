@@ -146,7 +146,7 @@ primitive1InitialPose_SE3 = [primitive1InitialPose_rotm, primitive1InitialPose_p
 primitive1Motion_rotm = eul2rot([(9/10)*pi/nSteps, 0, 0]);
 primitive1Motion_SE3 = [primitive1Motion_rotm, [(9/10)*pi*(Scale-primitive1Dis)/nSteps; 0; (9/10)*Ascend/nSteps]; 0, 0, 0, 1];
 primitive1Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive1InitialPose_SE3,primitive1Motion_SE3,'SE3');
-environment.addEllipsoid([1 1 2.5],8,4,'R3',primitive1Trajectory); % Radii, Num of faces, Num of points, parameter type for GP points on surface, traj
+environment.addEllipsoid([1 1 2.5],8,20,'R3',primitive1Trajectory); % Radii, Num of faces, Num of points, parameter type for GP points on surface, traj
 constantSE3ObjectMotion(:,1) = primitive1Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
 
 primitive2Dis = 5; % Distance to the sensor arc
@@ -156,7 +156,7 @@ primitive2InitialPose_SE3 = [primitive2InitialPose_rotm, primitive2InitialPose_p
 primitive2Motion_rotm = eul2rot([-pi/nSteps, 0, 0]);
 primitive2Motion_SE3 = [primitive2Motion_rotm, [pi*(Scale+primitive2Dis)/nSteps; 0; -Ascend/nSteps]; 0, 0, 0, 1];
 primitive2Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive2InitialPose_SE3,primitive2Motion_SE3,'SE3');
-environment.addEllipsoid([1 1 2.5],8,4,'R3',primitive2Trajectory); % Radii, Num of faces, Num of points, parameter type for GP points on surface, traj
+environment.addEllipsoid([1 1 2.5],8,20,'R3',primitive2Trajectory); % Radii, Num of faces, Num of points, parameter type for GP points on surface, traj
 constantSE3ObjectMotion(:,2) = primitive2Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
 
 % occlusion sensor
