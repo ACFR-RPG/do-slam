@@ -352,12 +352,14 @@ for i = 1:nSteps
 %                         end
                         covariance = config.covPosePoint;
                         covariance = covToUpperTriVec(covariance);
+                        cov_inv = covariance;
+                        cov_inv(cov_inv~=0) = 1./cov_inv(cov_inv~=0);
                         fprintf(gtFileID,'%s %d %d %d',label,indexPointPrev,indexPointCurr,motionVertexIndices(objectIndex(end), i));
-                        formatSpec = strcat(repmat(' %0.9f',1,numel(valueGT)), repmat(' %0.9f',1,numel(covariance)),'\n');
-                        fprintf(gtFileID,formatSpec,valueGT,covariance);
+                        formatSpec = strcat(repmat(' %0.9f',1,numel(valueGT)), repmat(' %0.9f',1,numel(cov_inv)),'\n');
+                        fprintf(gtFileID,formatSpec,valueGT,cov_inv);
                         fprintf(mFileID,'%s %d %d %d',label,indexPointPrev,indexPointCurr,motionVertexIndices(objectIndex(end), i));
-                        formatSpec = strcat(repmat(' %0.9f',1,numel(valueGT)), repmat(' %0.9f',1,numel(covariance)),'\n');
-                        fprintf(mFileID,formatSpec,valueMeas,covariance);
+                        formatSpec = strcat(repmat(' %0.9f',1,numel(valueGT)), repmat(' %0.9f',1,numel(cov_inv)),'\n');
+                        fprintf(mFileID,formatSpec,valueMeas,cov_inv);
                     case 'point2Edge'
                         label = config.pointPointEdgeLabel;
                         covariance = config.covPointPoint;
