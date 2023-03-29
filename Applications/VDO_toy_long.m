@@ -3,9 +3,9 @@ close all
 
 %% 1. Config
 % time
-nSteps = 256;
+nSteps = 32;
 t0 = 1;
-tN = 256;
+tN = 32;
 dt = (tN-t0)/(nSteps-1);
 t  = linspace(t0,tN,nSteps);
 
@@ -23,7 +23,8 @@ config.set('std2PointsSE3Motion', [0.05,0.05,0.05]');
 % config.set('fieldofView', [-pi/2,pi/2,-pi/3,pi/3,1,40]); % Requires update
 % neg90z_rotm = eul2rotm([0, 0, pi/2]);
 
-config.set('cameraRelativePose', GP_Pose([0;0;0;arot(eul2rot([0, 0, -pi/2]))]));
+config.set('cameraRelativePose', GP_Pose([0;0;0;arot(eul2rot([0, 0, 0]))]));
+% Camera frame convention - z outward, x downward, y to the left
 
 %% Graph File labels
 
@@ -60,15 +61,16 @@ config.set('stdPosePoint' ,[0.1,0.1,0.1]');
 
 Centre = [5; 10; 15]; % Centre (roughly) of the environment, where the traj sits
 Scale = 50; % Roughly the half size of the Bounding Box of the environment, a radius
+Ascend = 0; % How much increase in z 
 
-staticDim = 3; % How many static points there are on each side (Top, Bottom, Left and Right) in one set
-staticLen = 9; % How many sets of static points there are along the traj
+staticDim = 1; % How many static points there are on each side (Top, Bottom, Left and Right) in one set
+staticLen = 5; % How many sets of static points there are along the traj
 staticRes = 5; % How far apart the static points are on each side
 % Are there static point on this side (top, bottom, left and right)
 isStaticTop = true;
 isStaticBottom = true;
-isStaticLeft = false;
-isStaticRight = false;
+isStaticLeft = true;
+isStaticRight = true;
 
 %% Generate Environment
 
@@ -76,7 +78,7 @@ robotInitialPose_rotm = eye(3);
 robotInitialPose_pos = [0; -Scale; 0] + Centre;
 robotInitialPose_SE3 = [robotInitialPose_rotm, robotInitialPose_pos; 0, 0, 0, 1];
 robotMotion_rotm = eul2rot([pi/nSteps, 0, 0]);
-robotMotion_SE3 = [robotMotion_rotm, [pi*Scale/nSteps; 0; Scale/(4*nSteps)]; 0, 0, 0, 1];
+robotMotion_SE3 = [robotMotion_rotm, [pi*Scale/nSteps; 0; Ascend/nSteps]; 0, 0, 0, 1];
 
 robotTrajectory = ConstantMotionDiscretePoseTrajectory(t,robotInitialPose_SE3,robotMotion_SE3,'SE3');
 cameraTrajectory = RelativePoseTrajectory(robotTrajectory,config.cameraRelativePose);
@@ -88,26 +90,26 @@ environment = Environment();
 staticX = repmat(linspace(1, staticRes*(staticDim-1)+1, staticDim), 1, staticDim) - 25;
 staticY = 10*ones(1, staticDim^2);
 
-staticTZ = reshape(repmat(linspace(0, Scale/4, staticLen), 3, 1), [1, staticLen*staticDim])... 
+staticTZ = reshape(repmat(linspace(0, Ascend, staticLen), staticDim, 1), [1, staticLen*staticDim])... 
     + 10 + Centre(3); % [Z1, Z1, Z1, Z2, Z2, Z2...]
-staticBZ = reshape(repmat(linspace(0, Scale/4, staticLen), 3, 1), [1, staticLen*staticDim])...
+staticBZ = reshape(repmat(linspace(0, Ascend, staticLen), staticDim, 1), [1, staticLen*staticDim])...
     - 10 + Centre(3); % [Z1, Z1, Z1, Z2, Z2, Z2...]
 staticLRZ = repmat(linspace(-staticRes, staticRes, staticDim), 1, staticLen)...
-    + reshape(repmat(linspace(0, Scale/4, staticLen), 3, 1), [1, staticLen*staticDim])...
+    + reshape(repmat(linspace(0, Ascend, staticLen), staticDim, 1), [1, staticLen*staticDim])...
     + Centre(3); % [Z1, Z2, Z3, Z1, Z2, Z3...]
 
-staticTBX = reshape(repmat(cos(linspace(-pi/2, pi/2, staticLen)), 3, 1), [1, staticLen*staticDim])...
+staticTBX = reshape(repmat(cos(linspace(-pi/2, pi/2, staticLen)), staticDim, 1), [1, staticLen*staticDim])...
     .*(repmat(linspace(-staticRes, staticRes, staticDim), 1, staticLen) + Scale) + Centre(1); % [X1, X2, X3, X1, X2, X3...]
-staticLX = reshape(repmat(cos(linspace(-pi/2, pi/2, staticLen)), 3, 1), [1, staticLen*staticDim])...
+staticLX = reshape(repmat(cos(linspace(-pi/2, pi/2, staticLen)), staticDim, 1), [1, staticLen*staticDim])...
     *(Scale - 10) + Centre(1); % [X1, X1, X1, X2, X2, X2...]
-staticRX = reshape(repmat(cos(linspace(-pi/2, pi/2, staticLen)), 3, 1), [1, staticLen*staticDim])...
+staticRX = reshape(repmat(cos(linspace(-pi/2, pi/2, staticLen)), staticDim, 1), [1, staticLen*staticDim])...
     *(Scale + 10) + Centre(1); % [X1, X1, X1, X2, X2, X2...]
 
-staticTBY = reshape(repmat(sin(linspace(-pi/2, pi/2, staticLen)), 3, 1), [1, staticLen*staticDim])...
+staticTBY = reshape(repmat(sin(linspace(-pi/2, pi/2, staticLen)), staticDim, 1), [1, staticLen*staticDim])...
     .*(repmat(linspace(-staticRes, staticRes, staticDim), 1, staticLen) + Scale) + Centre(2); % [Y1, Y2, Y3, Y1, Y2, Y3...]
-staticLY = reshape(repmat(sin(linspace(-pi/2, pi/2, staticLen)), 3, 1), [1, staticLen*staticDim])...
+staticLY = reshape(repmat(sin(linspace(-pi/2, pi/2, staticLen)), staticDim, 1), [1, staticLen*staticDim])...
     *(Scale - 10) + Centre(2); % [Y1, Y1, Y1, Y2, Y2, Y2...]
-staticRY = reshape(repmat(sin(linspace(-pi/2, pi/2, staticLen)), 3, 1), [1, staticLen*staticDim])...
+staticRY = reshape(repmat(sin(linspace(-pi/2, pi/2, staticLen)), staticDim, 1), [1, staticLen*staticDim])...
     *(Scale + 10) + Centre(2); % [Y1, Y1, Y1, Y2, Y2, Y2...]
 
 staticT = [staticTBX; staticTBY; staticTZ];
@@ -139,22 +141,22 @@ constantSE3ObjectMotion = [];
 
 primitive1Dis = 5; % Distance to the sensor arc
 primitive1InitialPose_rotm = eul2rot([(1/10)*pi, 0, 0]);
-primitive1InitialPose_pos = [(Scale-primitive1Dis)*cos(-pi/2+pi/10); (Scale-primitive1Dis)*sin(-pi/2+pi/10); (1/10)*Scale/4] + Centre;
+primitive1InitialPose_pos = [(Scale-primitive1Dis)*cos(-pi/2+pi/10); (Scale-primitive1Dis)*sin(-pi/2+pi/10); (1/10)*Ascend] + Centre;
 primitive1InitialPose_SE3 = [primitive1InitialPose_rotm, primitive1InitialPose_pos; 0, 0, 0, 1];
 primitive1Motion_rotm = eul2rot([(9/10)*pi/nSteps, 0, 0]);
-primitive1Motion_SE3 = [primitive1Motion_rotm, [(9/10)*pi*(Scale-primitive1Dis)/nSteps; 0; (9/10)*Scale/(4*nSteps)]; 0, 0, 0, 1];
+primitive1Motion_SE3 = [primitive1Motion_rotm, [(9/10)*pi*(Scale-primitive1Dis)/nSteps; 0; (9/10)*Ascend/nSteps]; 0, 0, 0, 1];
 primitive1Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive1InitialPose_SE3,primitive1Motion_SE3,'SE3');
-environment.addEllipsoid([1 1 2.5],8,16,'R3',primitive1Trajectory); % Radii, Num of faces, Num of points, parameter type for GP points on surface, traj
+environment.addEllipsoid([1 1 2.5],8,4,'R3',primitive1Trajectory); % Radii, Num of faces, Num of points, parameter type for GP points on surface, traj
 constantSE3ObjectMotion(:,1) = primitive1Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
 
 primitive2Dis = 5; % Distance to the sensor arc
 primitive2InitialPose_rotm = eye(3);
-primitive2InitialPose_pos = [0; Scale+primitive2Dis; Scale/4] + Centre;
+primitive2InitialPose_pos = [0; Scale+primitive2Dis; Ascend] + Centre;
 primitive2InitialPose_SE3 = [primitive2InitialPose_rotm, primitive2InitialPose_pos; 0, 0, 0, 1];
 primitive2Motion_rotm = eul2rot([-pi/nSteps, 0, 0]);
-primitive2Motion_SE3 = [primitive2Motion_rotm, [pi*(Scale+primitive2Dis)/nSteps; 0; -Scale/(4*nSteps)]; 0, 0, 0, 1];
+primitive2Motion_SE3 = [primitive2Motion_rotm, [pi*(Scale+primitive2Dis)/nSteps; 0; -Ascend/nSteps]; 0, 0, 0, 1];
 primitive2Trajectory = ConstantMotionDiscretePoseTrajectory(t,primitive2InitialPose_SE3,primitive2Motion_SE3,'SE3');
-environment.addEllipsoid([1 1 2.5],8,16,'R3',primitive2Trajectory); % Radii, Num of faces, Num of points, parameter type for GP points on surface, traj
+environment.addEllipsoid([1 1 2.5],8,4,'R3',primitive2Trajectory); % Radii, Num of faces, Num of points, parameter type for GP points on surface, traj
 constantSE3ObjectMotion(:,2) = primitive2Trajectory.RelativePoseGlobalFrameR3xso3(t(1),t(2));
 
 % occlusion sensor

@@ -135,7 +135,7 @@ for i = 1:nSteps
         if ~prod(valueGT == zeros(length(valueGT),1))
             index1 = cameraVertexIndexes(i-1);
             index2 = cameraVertexIndexes(i);
-            writeEdge(label,index1,index2,valueGT,covariance./10000,gtFileID);
+            writeEdge(label,index1,index2,valueGT,covariance,gtFileID);
             covariance = config.covPosePose;
             writeEdge(label,index1,index2,valueMeas,covariance,mFileID);
         end
@@ -271,7 +271,7 @@ for i = 1:nSteps
             indexCam = cameraVertexIndexes(i);
             vertexIndex = jPoint.get('vertexIndex');
             indexPoint = vertexIndex(end); 
-            writeEdge(label,indexCam,indexPoint,valueGT,covariance./10000,gtFileID);
+            writeEdge(label,indexCam,indexPoint,valueGT,covariance,gtFileID);
             writeEdge(label,indexCam,indexPoint,valueMeas,covariance,mFileID);
         end
     end
@@ -312,7 +312,7 @@ for i = 1:nSteps
             covariance = config.covPosePoint;
             indexCam = cameraVertexIndexes(i);
             indexPoint = vertexIndexes(end);
-            writeEdge(label,indexCam,indexPoint,valueGT,covariance./10000,gtFileID);
+            writeEdge(label,indexCam,indexPoint,valueGT,covariance,gtFileID);
             writeEdge(label,indexCam,indexPoint,valueMeas,covariance,mFileID);
             
             % Associated currently observed points with previously seen
@@ -355,7 +355,7 @@ for i = 1:nSteps
                         covariance = covToUpperTriVec(covariance);
                         fprintf(gtFileID,'%s %d %d %d',label,indexPointPrev,indexPointCurr,motionVertexIndices(objectIndex(end), i));
                         formatSpec = strcat(repmat(' %0.9f',1,numel(valueGT)), repmat(' %0.9f',1,numel(covariance)),'\n');
-                        fprintf(gtFileID,formatSpec,valueGT,covariance./10000);
+                        fprintf(gtFileID,formatSpec,valueGT,covariance);
                         fprintf(mFileID,'%s %d %d %d',label,indexPointPrev,indexPointCurr,motionVertexIndices(objectIndex(end), i));
                         formatSpec = strcat(repmat(' %0.9f',1,numel(valueGT)), repmat(' %0.9f',1,numel(covariance)),'\n');
                         fprintf(mFileID,formatSpec,valueMeas,covariance);
