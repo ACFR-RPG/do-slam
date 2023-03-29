@@ -135,18 +135,17 @@ for i = 1:nSteps
         if ~prod(valueGT == zeros(length(valueGT),1))
             index1 = cameraVertexIndexes(i-1);
             index2 = cameraVertexIndexes(i);
-            writeEdge(label,index1,index2,valueGT,covariance,gtFileID);
             covariance = config.covPosePose;
+            writeEdge(label,index1,index2,valueGT,covariance,gtFileID);
             writeEdge(label,index1,index2,valueMeas,covariance,mFileID);
         end
     else
         label = 'EDGE_SE3_PRIOR';
         index1 = 1;
-        index2 = 0;
         value = [0; 0; 0; 0; 0; 0; 1];
         covariance = config.covPosePose;
-        writeEdge(label,index1,index2,value,covariance,gtFileID);
-        writeEdge(label,index1,index2,value,covariance,mFileID);
+        writeEdge(label,index1,value,covariance,gtFileID);
+        writeEdge(label,index1,value,covariance,mFileID);
     end
     % Store the current pose noisy into prev
     prevSensorPoseNoisy = currentSensorPoseNoisy; 
