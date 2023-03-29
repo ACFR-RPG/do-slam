@@ -197,9 +197,9 @@ for i = 1:nSteps
             currObjPoseNoisy = currObjPosesNoisy(j);
             prevObjPoseNoisy = prevObjPosesNoisy(j);
             objMotion = currObjPose.AbsoluteToRelativePose(PrevObjPose);
-            objMotionGlobal = GP_Pose(objMotion.RelativePoseGlobalFrameSE3(PrevObjPose), 'SE3');
+            objMotionGlobal = GP_Pose(PrevObjPose.RelativePoseGlobalFrameSE3(objMotion), 'SE3');
             objMotionNoisy = currObjPoseNoisy.AbsoluteToRelativePose(prevObjPoseNoisy);
-            objMotionGlobalNoisy = GP_Pose(objMotionNoisy.RelativePoseGlobalFrameSE3(prevObjPoseNoisy), 'SE3');
+            objMotionGlobalNoisy = GP_Pose(prevObjPoseNoisy.RelativePoseGlobalFrameSE3(objMotionNoisy), 'SE3');
             switch config.poseParameterisation
                 case 'R3xso3'
                     valueGT   = objMotionGlobal.get('R3xso3Pose');
