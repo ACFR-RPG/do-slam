@@ -144,8 +144,8 @@ for i = 1:nSteps
         index1 = 1;
         value = [0; 0; 0; 0; 0; 0; 1];
         covariance = config.covPosePose;
-        writeEdge(label,index1,value,covariance,gtFileID);
-        writeEdge(label,index1,value,covariance,mFileID);
+        writeEdgePrior(label,index1,value,covariance,gtFileID);
+        writeEdgePrior(label,index1,value,covariance,mFileID);
     end
     % Store the current pose noisy into prev
     prevSensorPoseNoisy = currentSensorPoseNoisy; 
