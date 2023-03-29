@@ -294,7 +294,7 @@ for i = 1:nSteps
             index = vertexIndexes(end);
             value = jPoint.get('R3Position',t(i));
             writeVertex(label,index,value,gtFileID);
-            writeVertex(label,index,value,mFileID);
+            writeVertex(label,index,value,mFileID);% DerSpiritus - Still GT points
             
             %WRITE SENSOR OBSERVATION EDGE TO FILE
             label = config.posePointEdgeLabel;
