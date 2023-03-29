@@ -185,8 +185,8 @@ zlabel('z (m)')
 
 hold on
 grid on
-primitive1Trajectory.plot(t,[0 0 0],'axesOFF')
-primitive2Trajectory.plot(t,[0 0 0],'axesOFF')
+% primitive1Trajectory.plot(t,[0 0 0],'axesOFF')
+% primitive2Trajectory.plot(t,[0 0 0],'axesOFF')
 
 cameraTrajectory.plot(t,[0 0 1],'axesOFF')
 frames = sensor.plot(t,environment);

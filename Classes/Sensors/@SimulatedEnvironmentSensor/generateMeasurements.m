@@ -197,18 +197,20 @@ for i = 1:nSteps
             currObjPoseNoisy = currObjPosesNoisy(j);
             prevObjPoseNoisy = prevObjPosesNoisy(j);
             objMotion = currObjPose.AbsoluteToRelativePose(PrevObjPose);
+            objMotionGlobal = GP_Pose(objMotion.RelativePoseGlobalFrameSE3(PrevObjPose), 'SE3');
             objMotionNoisy = currObjPoseNoisy.AbsoluteToRelativePose(prevObjPoseNoisy);
+            objMotionGlobalNoisy = GP_Pose(objMotionNoisy.RelativePoseGlobalFrameSE3(prevObjPoseNoisy), 'SE3');
             switch config.poseParameterisation
                 case 'R3xso3'
-                    valueGT   = objMotion.get('R3xso3Pose');
-                    valueMeas = objMotionNoisy.get('R3xso3Pose');
+                    valueGT   = objMotionGlobal.get('R3xso3Pose');
+                    valueMeas = objMotionGlobalNoisy.get('R3xso3Pose');
                     quat = rot2quat(valueGT(4:6));
                     valueGT = [valueGT(1:3); quat];
                     quatMeas = rot2quat(valueMeas(4:6));
                     valueMeas = [valueMeas(1:3); quatMeas];
                 case 'logSE3'
-                    valueGT   = objMotion.get('logSE3Pose');
-                    valueMeas = objMotionNoisy.get('logSE3Pose');
+                    valueGT   = objMotionGlobal.get('logSE3Pose');
+                    valueMeas = objMotionGlobalNoisy.get('logSE3Pose');
                 otherwise
                     error('Error: unsupported pose parameterisation')
             end
@@ -292,6 +294,7 @@ for i = 1:nSteps
             index = vertexIndexes(end);
             value = jPoint.get('R3Position',t(i));
             writeVertex(label,index,value,gtFileID);
+            writeVertex(label,index,value,mFileID);
             
             %WRITE SENSOR OBSERVATION EDGE TO FILE
             label = config.posePointEdgeLabel;
