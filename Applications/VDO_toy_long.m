@@ -3,9 +3,9 @@ close all
 
 %% 1. Config
 % time
-nSteps = 32;
+nSteps = 256;
 t0 = 1;
-tN = 32;
+tN = 256;
 dt = (tN-t0)/(nSteps-1);
 t  = linspace(t0,tN,nSteps);
 
@@ -63,8 +63,8 @@ Centre = [5; 10; 15]; % Centre (roughly) of the environment, where the traj sits
 Scale = 50; % Roughly the half size of the Bounding Box of the environment, a radius
 Ascend = 0; % How much increase in z 
 
-staticDim = 1; % How many static points there are on each side (Top, Bottom, Left and Right) in one set
-staticLen = 5; % How many sets of static points there are along the traj
+staticDim = 3; % How many static points there are on each side (Top, Bottom, Left and Right) in one set
+staticLen = 9; % How many sets of static points there are along the traj
 staticRes = 5; % How far apart the static points are on each side
 % Are there static point on this side (top, bottom, left and right)
 isStaticTop = true;
@@ -130,8 +130,6 @@ end
 if isStaticRight
     staticPoints = [staticPoints, staticR];
 end
-% statisPoints = [staticB, staticT, staticL, staticR];
-% if isStaticTop || isStaticBottom || isStaticLeft || isStaticRight
 if ~isempty(staticPoints)
     environment.addStaticPoints(staticPoints);
 end
@@ -185,8 +183,8 @@ zlabel('z (m)')
 
 hold on
 grid on
-% primitive1Trajectory.plot(t,[0 0 0],'axesOFF')
-% primitive2Trajectory.plot(t,[0 0 0],'axesOFF')
+primitive1Trajectory.plot(t,[0 0 0],'axesOFF')
+primitive2Trajectory.plot(t,[0 0 0],'axesOFF')
 
 cameraTrajectory.plot(t,[0 0 1],'axesOFF')
 frames = sensor.plot(t,environment);
