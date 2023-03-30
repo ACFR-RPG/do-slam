@@ -207,5 +207,5 @@ config.set('measurementsFileName', strcat(datestring, '/VDO_toy_measurements.gra
 config.set('groundTruthFileName', strcat(datestring, '/VDO_toy_groundTruth.graph'));
 sensor.generateMeasurements(config);
 % writeDataAssociationVerticesEdges_constantSE3Motion(config,constantSE3ObjectMotion);
-
+RearrangeTenaryFactors(config);
 
