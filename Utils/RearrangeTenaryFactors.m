@@ -81,4 +81,26 @@ end
 fclose(fileID);
 fclose(fileOutID);
 
+fileID = fopen(GTFileOutpath, 'r');
+fileOutID = fopen(GTFilepath, 'w');
+line = fgetl(fileID);
+while ischar(line)
+    fprintf(fileOutID, '%s\n', line);
+    line = fgetl(fileID);    
+end
+fclose(fileID);
+fclose(fileOutID);
+delete(GTFileOutpath);
+
+fileID = fopen(MeaFileOutpath, 'r');
+fileOutID = fopen(MeaFilepath, 'w');
+line = fgetl(fileID);
+while ischar(line)
+    fprintf(fileOutID, '%s\n', line);
+    line = fgetl(fileID);    
+end
+fclose(fileID);
+fclose(fileOutID);
+delete(MeaFileOutpath);
+
 end
