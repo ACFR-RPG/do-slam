@@ -3,9 +3,9 @@ close all
 
 %% 1. Config
 % time
-nSteps = 256;
+nSteps = 32;
 t0 = 1;
-tN = 256;
+tN = 32;
 dt = (tN-t0)/(nSteps-1);
 t  = linspace(t0,tN,nSteps);
 
@@ -63,7 +63,7 @@ Centre = [5; 10; 15]; % Centre (roughly) of the environment, where the traj sits
 Scale = 50; % Roughly the half size of the Bounding Box of the environment, a radius
 Ascend = 0; % How much increase in z 
 
-staticDim = 3; % How many static points there are on each side (Top, Bottom, Left and Right) in one set
+staticDim = 25; % How many static points there are on each side (Top, Bottom, Left and Right) in one set
 staticLen = 9; % How many sets of static points there are along the traj
 staticRes = 5; % How far apart the static points are on each side
 % Are there static point on this side (top, bottom, left and right)
@@ -94,19 +94,19 @@ staticTZ = reshape(repmat(linspace(0, Ascend, staticLen), staticDim, 1), [1, sta
     + 10 + Centre(3); % [Z1, Z1, Z1, Z2, Z2, Z2...]
 staticBZ = reshape(repmat(linspace(0, Ascend, staticLen), staticDim, 1), [1, staticLen*staticDim])...
     - 10 + Centre(3); % [Z1, Z1, Z1, Z2, Z2, Z2...]
-staticLRZ = repmat(linspace(-staticRes, staticRes, staticDim), 1, staticLen)...
+staticLRZ = repmat(linspace(-staticRes*(staticDim+1)/2, staticRes*(staticDim+1)/2, staticDim), 1, staticLen)...
     + reshape(repmat(linspace(0, Ascend, staticLen), staticDim, 1), [1, staticLen*staticDim])...
     + Centre(3); % [Z1, Z2, Z3, Z1, Z2, Z3...]
 
 staticTBX = reshape(repmat(cos(linspace(-pi/2, pi/2, staticLen)), staticDim, 1), [1, staticLen*staticDim])...
-    .*(repmat(linspace(-staticRes, staticRes, staticDim), 1, staticLen) + Scale) + Centre(1); % [X1, X2, X3, X1, X2, X3...]
+    .*(repmat(linspace(-staticRes*(staticDim+1)/2, staticRes*(staticDim+1)/2, staticDim), 1, staticLen) + Scale) + Centre(1); % [X1, X2, X3, X1, X2, X3...]
 staticLX = reshape(repmat(cos(linspace(-pi/2, pi/2, staticLen)), staticDim, 1), [1, staticLen*staticDim])...
     *(Scale - 10) + Centre(1); % [X1, X1, X1, X2, X2, X2...]
 staticRX = reshape(repmat(cos(linspace(-pi/2, pi/2, staticLen)), staticDim, 1), [1, staticLen*staticDim])...
     *(Scale + 10) + Centre(1); % [X1, X1, X1, X2, X2, X2...]
 
 staticTBY = reshape(repmat(sin(linspace(-pi/2, pi/2, staticLen)), staticDim, 1), [1, staticLen*staticDim])...
-    .*(repmat(linspace(-staticRes, staticRes, staticDim), 1, staticLen) + Scale) + Centre(2); % [Y1, Y2, Y3, Y1, Y2, Y3...]
+    .*(repmat(linspace(-staticRes*(staticDim+1)/2, staticRes*(staticDim+1)/2, staticDim), 1, staticLen) + Scale) + Centre(2); % [Y1, Y2, Y3, Y1, Y2, Y3...]
 staticLY = reshape(repmat(sin(linspace(-pi/2, pi/2, staticLen)), staticDim, 1), [1, staticLen*staticDim])...
     *(Scale - 10) + Centre(2); % [Y1, Y1, Y1, Y2, Y2, Y2...]
 staticRY = reshape(repmat(sin(linspace(-pi/2, pi/2, staticLen)), staticDim, 1), [1, staticLen*staticDim])...
