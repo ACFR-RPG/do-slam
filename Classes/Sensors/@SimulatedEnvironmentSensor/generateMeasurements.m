@@ -143,6 +143,8 @@ for i = 1:nSteps
         label = 'EDGE_SE3_PRIOR';
         index1 = 1;
         value = currentSensorPose.get('R3xso3Pose');
+        quat = rot2quat(value(4:6));
+        value = [value(1:3); quat];
         covariance = config.covPosePose;
         writeEdgePrior(label,index1,value,covariance,gtFileID);
         writeEdgePrior(label,index1,value,covariance,mFileID);
