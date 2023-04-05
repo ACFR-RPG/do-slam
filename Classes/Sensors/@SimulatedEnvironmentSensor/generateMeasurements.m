@@ -142,7 +142,7 @@ for i = 1:nSteps
     else
         label = 'EDGE_SE3_PRIOR';
         index1 = 1;
-        value = [0; 0; 0; 0; 0; 0; 1];
+        value = currentSensorPose.get('R3xso3Pose');
         covariance = config.covPosePose;
         writeEdgePrior(label,index1,value,covariance,gtFileID);
         writeEdgePrior(label,index1,value,covariance,mFileID);
@@ -230,6 +230,7 @@ for i = 1:nSteps
         jPointVisible = self.pointVisibility(j,i);
         jPointRelative = self.pointObservationRelative(j,i);
         if jPointVisible
+            writeGTVertex = false;
             %check if point observed before
             if isempty(jPoint.get('vertexIndex'))
                 vertexCount = vertexCount + 1;
@@ -239,8 +240,9 @@ for i = 1:nSteps
                 index = jPoint.get('vertexIndex');
                 value = jPoint.get('R3Position',t(i));
                 writeVertex(label,index,value,gtFileID);
+                writeGTVertex = true;
 %                 valueMeas = jPointNoisy.get('R3Position',t(i));
-                writeVertex(label,index,value,mFileID); % DerSpiritus - Still GT points
+%                 writeVertex(label,index,value,mFileID); % DerSpiritus - Still GT points
             elseif (i>1) && (~self.pointVisibility(j,i-1)) && strcmp(config.staticDataAssociation,'Off' )
                 label = config.pointVertexLabel;
                 vertexCount = vertexCount + 1;
@@ -249,8 +251,9 @@ for i = 1:nSteps
                 index = vertexIndex(end);
                 value = jPoint.get('R3Position',t(i));
                 writeVertex(label,index,value,gtFileID);
+                writeGTVertex = true;
 %                 valueMeas = jPointNoisy.get('R3Position',t(i));
-                writeVertex(label,index,value,mFileID); % DerSpiritus - Still GT points
+%                 writeVertex(label,index,value,mFileID); % DerSpiritus - Still GT points
             end
             
             %WRITE EDGE TO FILE
@@ -258,13 +261,17 @@ for i = 1:nSteps
             switch config.poseParameterisation
                 case 'R3xso3'
                     jPointRelativeNoisy = jPointRelative.addNoise(config.noiseModel,zeros(size(config.stdPosePoint)),config.stdPosePoint); 
+                    jPointNoisy = jPointRelativeNoisy.RelativeToAbsolutePoint(currentSensorPoseNoisy);
                     valueGT   = jPointRelative.get('R3Position');
                     valueMeas = jPointRelativeNoisy.get('R3Position');
+                    valueMeasGlobal = jPointNoisy.get('R3Position');
                 case 'logSE3'
                     jPointRelativeLogSE3      = jPoint.get('GP_Point',t(i)).AbsoluteToRelativePoint(self.get('GP_Pose',t(i)),'logSE3');
                     jPointRelativeLogSE3Noisy = jPointRelativeLogSE3.addNoise(config.noiseModel,zeros(size(config.stdPosePoint)),config.stdPosePoint); 
+                    jPointLogSE3Noisy = jPointRelativeLogSE3Noisy.RelativeToAbsolutePoint(currentSensorPoseNoisy, 'logSE3');
                     valueGT   = jPointRelativeLogSE3.get('R3Position');
                     valueMeas = jPointRelativeLogSE3Noisy.get('R3Position');
+                    valueMeasGlobal = jPointLogSE3Noisy.get('R3Position');
                 otherwise
                     error('Error: unsupported pose parameterisation')
             end
@@ -273,6 +280,9 @@ for i = 1:nSteps
             vertexIndex = jPoint.get('vertexIndex');
             indexPoint = vertexIndex(end); 
             writeEdge(label,indexCam,indexPoint,valueGT,covariance,gtFileID);
+            if writeGTVertex
+                writeVertex(config.pointVertexLabel,index,valueMeasGlobal,mFileID);
+            end
             writeEdge(label,indexCam,indexPoint,valueMeas,covariance,mFileID);
         end
     end
